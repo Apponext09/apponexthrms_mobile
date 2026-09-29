@@ -2,7 +2,6 @@ import React, { useCallback, useEffect } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
-  ArrowLeftRight,
   Bell,
   Briefcase,
   Building,
@@ -21,12 +20,11 @@ import { AppText, Card, ListRow, Screen, SectionHeader } from '@/components/ui';
 import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
-import { logout, selectAuth, switchViewMode } from '@/store/slices/authSlice';
+import { logout, selectAuth } from '@/store/slices/authSlice';
 import {
   fetchEmployeeProfile,
   selectProfile,
 } from '@/store/slices/profileSlice';
-import { canUseAdminView } from '@/utils/roles';
 import { formatDate, titleCase } from '@/utils/format';
 
 const InfoItem = ({ icon: Icon, label, value }) => {
@@ -50,11 +48,10 @@ const ProfileScreen = () => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const { shadow, radius } = useTheme();
-  const { user, viewMode } = useAppSelector(selectAuth);
+  const { user } = useAppSelector(selectAuth);
   const { employee } = useAppSelector(selectProfile);
   const emp = employee.data || {};
   const hasEmployee = Boolean(user?.employeeId);
-  const canSwitch = canUseAdminView(user?.roles) && hasEmployee;
 
   const load = useCallback(() => {
     if (hasEmployee) dispatch(fetchEmployeeProfile());
@@ -113,33 +110,6 @@ const ProfileScreen = () => {
           />
         )}
       </Card>
-
-      {canSwitch ? (
-        <>
-          <SectionHeader title="Workspace" />
-          <Card style={styles.menu}>
-            <ListRow
-              icon={ArrowLeftRight}
-              title={
-                viewMode === 'admin'
-                  ? 'Switch to employee view'
-                  : 'Switch to admin view'
-              }
-              subtitle={
-                viewMode === 'admin'
-                  ? 'Punch attendance, apply for leave and claims'
-                  : 'Review team approvals and org insights'
-              }
-              onPress={() =>
-                dispatch(
-                  switchViewMode(viewMode === 'admin' ? 'employee' : 'admin'),
-                )
-              }
-              last
-            />
-          </Card>
-        </>
-      ) : null}
 
       <SectionHeader title="Account" />
       <Card style={styles.menu}>

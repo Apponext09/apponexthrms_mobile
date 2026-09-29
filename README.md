@@ -12,15 +12,15 @@ React Native CLI app (JavaScript / JSX) for the Apponext HRMS platform, with an
 | Attendance | Check in / out with GPS, breaks, monthly log and summary   | Org attendance today, weekly trend, regularization approvals   |
 | Leave      | Balances, apply (full / half day), history, cancel         | Pending and processed approvals, approve / reject with note    |
 | Expense    | Multi-item claims with receipt photos, filters, details    | Pending claim approvals, approve / reject with note            |
-| Profile    | Profile, edit, change password, admin/employee view switch | Same                                                           |
+| Profile    | Profile, edit profile, change password                     | Same                                                           |
 
 Plus: notifications, settings (light / dark / system theme, notification
 preferences, clear cache), help & FAQ, about, secure sign-out.
 
 Users with an admin role (`organization_admin`, `company_admin`, `hr_manager`,
-`finance`, `super_admin`) get the admin side. If they also have an employee
-record they can switch views from the Profile tab. Everyone else, including
-team leads and reporting managers, gets the employee side.
+`finance`, `super_admin`) always get the admin side. Everyone else, including
+team leads and reporting managers, gets the employee side. There is no view
+switch.
 
 ## Tech stack
 

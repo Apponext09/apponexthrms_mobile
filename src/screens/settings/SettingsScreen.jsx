@@ -58,11 +58,9 @@ const SettingsScreen = () => {
           onPress: async () => {
             const keep = await appStorage.getSettings();
             const user = await appStorage.getUser();
-            const mode = await appStorage.getViewMode();
             await AsyncStorage.clear();
             if (keep) await appStorage.setSettings(keep);
             if (user) await appStorage.setUser(user);
-            if (mode) await appStorage.setViewMode(mode);
             toast.show('Cache cleared');
           },
         },

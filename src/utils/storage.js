@@ -5,7 +5,6 @@ const TOKEN_SERVICE = 'com.apponext.hrms.tokens';
 const KEYS = {
   user: '@hrms/user',
   settings: '@hrms/settings',
-  viewMode: '@hrms/viewMode',
 };
 
 // Tokens live in the Android Keystore / iOS Keychain, never in plain AsyncStorage
@@ -50,10 +49,7 @@ export const appStorage = {
   setUser: user => setJSON(KEYS.user, user),
   getSettings: () => getJSON(KEYS.settings),
   setSettings: settings => setJSON(KEYS.settings, settings),
-  getViewMode: () => AsyncStorage.getItem(KEYS.viewMode),
-  setViewMode: mode => AsyncStorage.setItem(KEYS.viewMode, mode),
   async clearSession() {
-    // AsyncStorage v3 renamed multiRemove -> removeMany
-    await AsyncStorage.removeMany([KEYS.user, KEYS.viewMode]);
+    await AsyncStorage.removeItem(KEYS.user);
   },
 };

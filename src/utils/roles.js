@@ -6,25 +6,13 @@ export const ADMIN_ROLES = [
   'hr_manager',
   'finance',
 ];
-export const APPROVER_ROLES = [
-  'reporting_manager',
-  'team_lead',
-  'recruitment_manager',
-];
-
 const has = (roles, list) =>
   (roles || []).some(r => list.includes(String(r).toLowerCase()));
 
 export const isAdmin = roles => has(roles, ADMIN_ROLES);
-export const isApprover = roles => has(roles, APPROVER_ROLES);
 
-// Admin side is only for admin roles; team leads / managers use the employee side
-export const canUseAdminView = roles => isAdmin(roles);
-
-// Employee side needs an employee record to punch attendance and apply leave
-export const canUseEmployeeView = user =>
-  Boolean(user?.employeeId) || !isAdmin(user?.roles);
-
+// Admin roles always get the admin side; everyone else (including team leads
+// and managers) gets the employee side. There is no switching between them.
 export const defaultViewMode = user =>
   isAdmin(user?.roles) ? 'admin' : 'employee';
 

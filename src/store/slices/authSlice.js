@@ -8,7 +8,7 @@ import {
 import { tokenStorage, appStorage } from '@/utils/storage';
 import { normalizeUser } from '@/utils/normalize';
 import { getErrorMessage } from '@/utils/errors';
-import { canUseAdminView, defaultViewMode } from '@/utils/roles';
+import { defaultViewMode } from '@/utils/roles';
 
 // Restores a saved session on app start
 export const bootstrapSession = createAsyncThunk('auth/bootstrap', async () => {
@@ -16,7 +16,6 @@ export const bootstrapSession = createAsyncThunk('auth/bootstrap', async () => {
   if (!tokens?.accessToken) return null;
   setSessionTokens(tokens);
   const cachedUser = await appStorage.getUser();
-  const viewMode = await appStorage.getViewMode();
   try {
     // Refresh the profile in the background; a 401 here triggers token refresh
     const me = await authService.me();
@@ -25,7 +24,7 @@ export const bootstrapSession = createAsyncThunk('auth/bootstrap', async () => {
     if (!user.employeeId && cachedUser?.employeeId)
       user.employeeId = cachedUser.employeeId;
     await appStorage.setUser(user);
-    return { user, viewMode };
+    return { user };
   } catch (err) {
     if (err.response?.status === 401) {
       await tokenStorage.clear();
@@ -33,7 +32,7 @@ export const bootstrapSession = createAsyncThunk('auth/bootstrap', async () => {
       return null;
     }
     // Offline: continue with the cached user
-    return cachedUser ? { user: cachedUser, viewMode } : null;
+    return cachedUser ? { user: cachedUser } : null;
   }
 });
 
@@ -68,9 +67,7 @@ export const login = createAsyncThunk(
         // Non-fatal: continue with the login payload
       }
       await appStorage.setUser(user);
-      const viewMode = defaultViewMode(user);
-      await appStorage.setViewMode(viewMode);
-      return { user, viewMode };
+      return { user };
     } catch (err) {
       return rejectWithValue(getErrorMessage(err, 'Invalid email or password'));
     }
@@ -112,19 +109,12 @@ export const refreshProfile = createAsyncThunk(
   },
 );
 
-export const switchViewMode = createAsyncThunk(
-  'auth/switchViewMode',
-  async mode => {
-    await appStorage.setViewMode(mode);
-    return mode;
-  },
-);
-
 const initialState = {
   status: 'idle', // idle | bootstrapping | ready
   isAuthenticated: false,
   user: null,
-  viewMode: 'employee', // 'employee' | 'admin'
+  // 'admin' for admin roles, otherwise 'employee'; derived from roles, never switched
+  viewMode: 'employee',
   loginLoading: false,
   loginError: null,
 };
@@ -151,14 +141,7 @@ const authSlice = createSlice({
         if (payload?.user) {
           state.isAuthenticated = true;
           state.user = payload.user;
-          const allowed =
-            payload.viewMode === 'admin'
-              ? canUseAdminView(payload.user.roles)
-              : true;
-          state.viewMode =
-            allowed && payload.viewMode
-              ? payload.viewMode
-              : defaultViewMode(payload.user);
+          state.viewMode = defaultViewMode(payload.user);
         }
       })
       .addCase(bootstrapSession.rejected, state => {
@@ -172,7 +155,7 @@ const authSlice = createSlice({
         state.loginLoading = false;
         state.isAuthenticated = true;
         state.user = payload.user;
-        state.viewMode = payload.viewMode;
+        state.viewMode = defaultViewMode(payload.user);
       })
       .addCase(login.rejected, (state, { payload, error }) => {
         state.loginLoading = false;
@@ -183,9 +166,7 @@ const authSlice = createSlice({
       .addCase(sessionExpired.fulfilled, signOut)
       .addCase(refreshProfile.fulfilled, (state, { payload }) => {
         state.user = payload;
-      })
-      .addCase(switchViewMode.fulfilled, (state, { payload }) => {
-        state.viewMode = payload;
+        state.viewMode = defaultViewMode(payload);
       });
   },
 });
