@@ -22,6 +22,7 @@ import {
   StatusBadge,
 } from '@/components/ui';
 import BarChart from '@/components/charts/BarChart';
+import StackedBar from '@/components/charts/StackedBar';
 import ProgressRing from '@/components/charts/ProgressRing';
 import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';
@@ -31,7 +32,8 @@ import {
   selectAdminStats,
 } from '@/store/slices/dashboardSlice';
 import { fetchUnreadCount } from '@/store/slices/notificationSlice';
-import { formatCompact } from '@/utils/format';
+import { formatCompact, titleCase } from '@/utils/format';
+import { capitalize } from '@/utils/normalize';
 
 const Legend = ({ color, label, value }) => (
   <View style={styles.legend}>
@@ -66,6 +68,33 @@ const AdminDashboardScreen = () => {
     secondary: w.late,
   }));
   const byType = d.leaveAnalytics?.byType || [];
+  const growth = (d.growthTrend || []).map(g => ({
+    label: g.month,
+    value: Number(g.employees) || 0,
+  }));
+  const hasGrowth = growth.some(g => g.value > 0);
+  const workforce = d.workforceAnalytics || {};
+  // The API can return the same bucket in different cases ("full time" / "Full time")
+  const mergeBuckets = (list = [], key) => {
+    const out = {};
+    list.forEach(x => {
+      const name = titleCase(x[key] || 'Not specified');
+      out[name] = (out[name] || 0) + (Number(x.count) || 0);
+    });
+    return Object.entries(out).map(([label, value]) => ({ label, value }));
+  };
+  const palette = [
+    colors.primary,
+    colors.warning,
+    colors.success,
+    colors.info,
+    colors.danger,
+    colors.mutedForeground,
+  ];
+  const paint = list =>
+    list.map((x, i) => ({ ...x, color: palette[i % palette.length] }));
+  const genderSplit = paint(mergeBuckets(workforce.byGender, 'gender'));
+  const typeSplit = paint(mergeBuckets(workforce.byEmploymentType, 'type'));
 
   return (
     <Screen
@@ -172,6 +201,46 @@ const AdminDashboardScreen = () => {
             </View>
           </Card>
 
+          {hasGrowth ? (
+            <>
+              <SectionHeader title="Headcount trend" />
+              <Card>
+                <AppText
+                  variant="caption"
+                  color="mutedForeground"
+                  style={styles.chartHint}
+                >
+                  Employees on the books, last {growth.length} months
+                </AppText>
+                <BarChart data={growth} showValues height={110} />
+              </Card>
+            </>
+          ) : null}
+
+          {genderSplit.length || typeSplit.length ? (
+            <>
+              <SectionHeader title="Workforce" />
+              <Card style={styles.workforce}>
+                {genderSplit.length ? (
+                  <View>
+                    <AppText variant="captionMedium" style={styles.splitTitle}>
+                      By gender
+                    </AppText>
+                    <StackedBar segments={genderSplit} />
+                  </View>
+                ) : null}
+                {typeSplit.length ? (
+                  <View>
+                    <AppText variant="captionMedium" style={styles.splitTitle}>
+                      By employment type
+                    </AppText>
+                    <StackedBar segments={typeSplit} />
+                  </View>
+                ) : null}
+              </Card>
+            </>
+          ) : null}
+
           {weekly.length ? (
             <>
               <SectionHeader title="This week" />
@@ -252,7 +321,9 @@ const AdminDashboardScreen = () => {
                     />
                     <View style={styles.flex}>
                       <AppText variant="bodyMedium">
-                        {e.firstName} {e.lastName}
+                        {capitalize(
+                          `${e.firstName || ''} ${e.lastName || ''}`.trim(),
+                        )}
                       </AppText>
                       <AppText variant="caption" color="mutedForeground">
                         {[e.employeeCode, e.departmentName]
@@ -285,6 +356,9 @@ const AdminDashboardScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  chartHint: { marginBottom: 12 },
+  workforce: { gap: 20 },
+  splitTitle: { marginBottom: 10 },
   flex: { flex: 1 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   skel: { width: '47%' },

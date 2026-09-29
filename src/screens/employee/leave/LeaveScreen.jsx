@@ -23,6 +23,7 @@ import {
 } from '@/components/ui';
 import LeaveCard from '@/components/common/LeaveCard';
 import AppHeader from '@/components/common/AppHeader';
+import ProgressBar from '@/components/charts/ProgressBar';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import {
@@ -142,18 +143,27 @@ const LeaveScreen = () => {
                 },
               ]}
             >
-              <AppText
-                variant="bodyMedium"
-                style={styles.flex}
-                numberOfLines={1}
-              >
-                {b.name}
-              </AppText>
+              <View style={styles.balTop}>
+                <AppText
+                  variant="bodyMedium"
+                  style={styles.flex}
+                  numberOfLines={1}
+                >
+                  {b.name}
+                </AppText>
+                <AppText variant="bodyMedium" color="primary">
+                  {b.available} left
+                </AppText>
+              </View>
+              {/* Bar shows what is still available out of the allocation */}
+              <ProgressBar
+                progress={b.total ? b.available / b.total : 0}
+                style={styles.balBar}
+              />
               <AppText variant="caption" color="mutedForeground">
-                {b.consumed} used{b.pending ? ` · ${b.pending} pending` : ''}
-              </AppText>
-              <AppText variant="bodyMedium" color="primary">
-                {b.available} left
+                {b.consumed} used
+                {b.pending ? ` · ${b.pending} pending` : ''}
+                {b.total ? ` · ${b.total} allocated` : ''}
               </AppText>
             </View>
           ))}
@@ -195,12 +205,9 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 12 },
   balDetail: { paddingVertical: 4 },
-  balLine: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    gap: 8,
-  },
+  balLine: { paddingVertical: 12 },
+  balTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  balBar: { marginTop: 8, marginBottom: 6 },
   tabs: { marginBottom: 14 },
   footer: { padding: 16, borderTopWidth: StyleSheet.hairlineWidth },
 });

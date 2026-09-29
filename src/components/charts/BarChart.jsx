@@ -54,14 +54,17 @@ const BarChart = ({
                 }}
               />
             </View>
-            <AppText
-              variant="small"
-              color="mutedForeground"
-              style={styles.label}
-              numberOfLines={1}
-            >
-              {d.label}
-            </AppText>
+            {/* Fixed-width label may be wider than a thin column; it overflows instead of truncating */}
+            <View style={styles.labelBox}>
+              <AppText
+                variant="small"
+                color="mutedForeground"
+                style={styles.label}
+                numberOfLines={1}
+              >
+                {d.label}
+              </AppText>
+            </View>
           </View>
         );
       })}
@@ -78,7 +81,8 @@ const styles = StyleSheet.create({
   },
   col: { flex: 1, alignItems: 'center', gap: 4 },
   track: { borderRadius: 6, overflow: 'hidden', justifyContent: 'flex-end' },
-  label: { marginTop: 2 },
+  labelBox: { width: 1, alignItems: 'center', overflow: 'visible' },
+  label: { width: 28, textAlign: 'center', marginTop: 2 },
 });
 
 export default BarChart;

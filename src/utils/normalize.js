@@ -1,12 +1,13 @@
 // The backend mixes camelCase and snake_case. These helpers read either form
 // and return one consistent shape for the UI.
 
-// Names are often stored lowercase ("aqil jamadar"); show them capitalised
+// Names are often stored lowercase with stray spaces ("aqil  jamadar ");
+// show them capitalised with single spaces
 export const capitalize = str =>
-  String(str || '').replace(
-    /(^|\s)(\S)/g,
-    (m, sp, ch) => sp + ch.toUpperCase(),
-  );
+  String(str || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/(^|\s)(\S)/g, (m, sp, ch) => sp + ch.toUpperCase());
 
 export const pick = (obj, ...keys) => {
   if (!obj) return undefined;
