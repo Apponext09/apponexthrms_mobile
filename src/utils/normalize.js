@@ -1,6 +1,13 @@
 // The backend mixes camelCase and snake_case. These helpers read either form
 // and return one consistent shape for the UI.
 
+// Names are often stored lowercase ("aqil jamadar"); show them capitalised
+export const capitalize = str =>
+  String(str || '').replace(
+    /(^|\s)(\S)/g,
+    (m, sp, ch) => sp + ch.toUpperCase(),
+  );
+
 export const pick = (obj, ...keys) => {
   if (!obj) return undefined;
   for (const k of keys) {
@@ -23,14 +30,15 @@ export const normalizeUser = (u = {}, roles = []) => ({
   id: pick(u, 'id'),
   uuid: pick(u, 'uuid'),
   email: pick(u, 'email') || '',
-  firstName: pick(u, 'firstName', 'first_name') || '',
-  lastName: pick(u, 'lastName', 'last_name') || '',
+  firstName: capitalize(pick(u, 'firstName', 'first_name')),
+  lastName: capitalize(pick(u, 'lastName', 'last_name')),
   phone: pick(u, 'phone', 'mobile') || '',
   avatarUrl: pick(u, 'avatarUrl', 'avatar_url') || null,
   designation:
     pick(u, 'designation', 'designationName', 'designation_name') || '',
   organizationId: pick(u, 'organizationId', 'organization_id'),
   orgName: pick(u, 'orgName', 'organizationName', 'organization_name') || '',
+  department: pick(u, 'departmentName', 'department_name') || '',
   employeeId: pick(u, 'employeeId', 'employee_id') || null,
   roles: (u.roles && u.roles.length ? u.roles : roles || []).map(r =>
     typeof r === 'string' ? r : r?.code || r?.name,
@@ -42,8 +50,8 @@ export const normalizeUser = (u = {}, roles = []) => ({
 export const normalizeEmployee = (e = {}) => ({
   id: pick(e, 'id'),
   employeeCode: pick(e, 'employeeCode', 'employee_code') || '',
-  firstName: pick(e, 'firstName', 'first_name') || '',
-  lastName: pick(e, 'lastName', 'last_name') || '',
+  firstName: capitalize(pick(e, 'firstName', 'first_name')),
+  lastName: capitalize(pick(e, 'lastName', 'last_name')),
   email: pick(e, 'email', 'workEmail', 'work_email') || '',
   phone: pick(e, 'phone', 'mobile') || '',
   avatarUrl: pick(e, 'avatarUrl', 'avatar_url') || null,
@@ -59,7 +67,7 @@ export const normalizeEmployee = (e = {}) => ({
     pick(e, 'designationName', 'designation_name', 'designation') || '',
   branch:
     pick(e, 'branchName', 'branch_name', 'locationName', 'location_name') || '',
-  manager:
+  manager: capitalize(
     pick(
       e,
       'reportingManagerName',
@@ -67,12 +75,13 @@ export const normalizeEmployee = (e = {}) => ({
       'managerName',
       'manager_name',
     ) ||
-    [
-      pick(e, 'rmFirstName', 'rm_first_name'),
-      pick(e, 'rmLastName', 'rm_last_name'),
-    ]
-      .filter(Boolean)
-      .join(' '),
+      [
+        pick(e, 'rmFirstName', 'rm_first_name'),
+        pick(e, 'rmLastName', 'rm_last_name'),
+      ]
+        .filter(Boolean)
+        .join(' '),
+  ),
   companyName: pick(e, 'companyName', 'company_name') || '',
 });
 
@@ -107,7 +116,7 @@ export const normalizeAttendanceRecord = (r = {}) => ({
 
 export const normalizeLeaveType = (t = {}) => ({
   id: Number(pick(t, 'id', 'leaveTypeId', 'leave_type_id')),
-  name:
+  name: capitalize(
     pick(
       t,
       'leaveName',
@@ -116,6 +125,7 @@ export const normalizeLeaveType = (t = {}) => ({
       'leaveTypeName',
       'leave_type_name',
     ) || 'Leave',
+  ),
   code: pick(t, 'leaveCode', 'leave_code', 'code') || '',
   color: pick(t, 'color') || null,
   annualQuota: Number(pick(t, 'annualQuota', 'annual_quota') || 0),
@@ -124,7 +134,7 @@ export const normalizeLeaveType = (t = {}) => ({
 
 export const normalizeLeaveBalance = (b = {}) => ({
   leaveTypeId: Number(pick(b, 'leaveTypeId', 'leave_type_id', 'id')),
-  name:
+  name: capitalize(
     pick(
       b,
       'leaveName',
@@ -133,6 +143,7 @@ export const normalizeLeaveBalance = (b = {}) => ({
       'leave_type_name',
       'name',
     ) || 'Leave',
+  ),
   code: pick(b, 'leaveCode', 'leave_code', 'code') || '',
   available: Number(
     pick(b, 'availableBalance', 'available_balance', 'available', 'balance') ??
@@ -164,7 +175,7 @@ export const normalizeLeaveBalance = (b = {}) => ({
 export const normalizeLeaveApplication = (a = {}) => ({
   id: pick(a, 'id', 'applicationId', 'application_id'),
   leaveTypeId: pick(a, 'leaveTypeId', 'leave_type_id'),
-  leaveType:
+  leaveType: capitalize(
     pick(
       a,
       'leaveName',
@@ -173,6 +184,7 @@ export const normalizeLeaveApplication = (a = {}) => ({
       'leave_type_name',
       'leaveType',
     ) || 'Leave',
+  ),
   startDate: pick(
     a,
     'applicationStartDate',
@@ -195,26 +207,27 @@ export const normalizeLeaveApplication = (a = {}) => ({
   appliedOn: pick(a, 'submittedAt', 'submitted_at', 'createdAt', 'created_at'),
   approverName: pick(a, 'approverName', 'approver_name') || '',
   rejectionReason: pick(a, 'rejectionReason', 'rejection_reason') || '',
-  employeeName:
+  employeeName: capitalize(
     pick(a, 'employeeName', 'employee_name') ||
-    [
-      pick(
-        a,
-        'firstName',
-        'first_name',
-        'employeeFirstName',
-        'employee_first_name',
-      ),
-      pick(
-        a,
-        'lastName',
-        'last_name',
-        'employeeLastName',
-        'employee_last_name',
-      ),
-    ]
-      .filter(Boolean)
-      .join(' '),
+      [
+        pick(
+          a,
+          'firstName',
+          'first_name',
+          'employeeFirstName',
+          'employee_first_name',
+        ),
+        pick(
+          a,
+          'lastName',
+          'last_name',
+          'employeeLastName',
+          'employee_last_name',
+        ),
+      ]
+        .filter(Boolean)
+        .join(' '),
+  ),
   employeeCode: pick(a, 'employeeCode', 'employee_code') || '',
   applicationId: pick(
     a,
@@ -265,14 +278,15 @@ export const normalizeExpenseClaim = (c = {}) => ({
       'returnComments',
       'return_comments',
     ) || '',
-  employeeName:
+  employeeName: capitalize(
     pick(c, 'employeeName', 'employee_name') ||
-    [
-      pick(c, 'firstName', 'first_name', 'employeeFirstName'),
-      pick(c, 'lastName', 'last_name', 'employeeLastName'),
-    ]
-      .filter(Boolean)
-      .join(' '),
+      [
+        pick(c, 'firstName', 'first_name', 'employeeFirstName'),
+        pick(c, 'lastName', 'last_name', 'employeeLastName'),
+      ]
+        .filter(Boolean)
+        .join(' '),
+  ),
   items: Array.isArray(c.items) ? c.items : [],
 });
 

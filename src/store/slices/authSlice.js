@@ -16,7 +16,7 @@ export const bootstrapSession = createAsyncThunk('auth/bootstrap', async () => {
   try {
     // Refresh the profile in the background; a 401 here triggers token refresh
     const me = await authService.me();
-    const user = { ...cachedUser, ...normalizeUser(me, me?.roles) };
+    const user = { ...cachedUser, ...normalizeUser(me?.user || me, me?.roles) };
     if (!user.roles?.length && cachedUser?.roles) user.roles = cachedUser.roles;
     if (!user.employeeId && cachedUser?.employeeId)
       user.employeeId = cachedUser.employeeId;
@@ -49,7 +49,18 @@ export const login = createAsyncThunk(
       };
       setSessionTokens(tokens);
       await tokenStorage.save(tokens);
-      const user = normalizeUser(data.user, data.roles);
+      let user = normalizeUser(data.user, data.roles);
+      try {
+        // The login payload can have empty names; /auth/me has the full profile
+        const me = await authService.me();
+        const full = normalizeUser(me?.user || me, me?.roles);
+        const filled = Object.entries(full).filter(
+          ([, v]) => v !== '' && v != null && !(Array.isArray(v) && !v.length),
+        );
+        user = { ...user, ...Object.fromEntries(filled) };
+      } catch {
+        // Non-fatal: continue with the login payload
+      }
       await appStorage.setUser(user);
       const viewMode = defaultViewMode(user);
       await appStorage.setViewMode(viewMode);
@@ -86,7 +97,7 @@ export const refreshProfile = createAsyncThunk(
   async (_, { getState }) => {
     const me = await authService.me();
     const current = getState().auth.user || {};
-    const user = { ...current, ...normalizeUser(me, me?.roles) };
+    const user = { ...current, ...normalizeUser(me?.user || me, me?.roles) };
     if (!user.roles?.length) user.roles = current.roles;
     if (!user.employeeId) user.employeeId = current.employeeId;
     await appStorage.setUser(user);
