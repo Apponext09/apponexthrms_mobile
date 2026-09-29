@@ -4,7 +4,4 @@ export const ENV = {
   REQUEST_TIMEOUT_MS: 30000,
   APP_NAME: 'Apponext HRMS',
   APP_VERSION: '1.0.0',
-  SUPPORT_EMAIL: 'support@apponext.in',
-  PRIVACY_URL: 'https://hrms.apponext.in/privacy',
-  TERMS_URL: 'https://hrms.apponext.in/terms',
 };

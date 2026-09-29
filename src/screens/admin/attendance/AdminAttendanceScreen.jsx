@@ -12,7 +12,7 @@ import {
   StatCard,
   useToast,
 } from '@/components/ui';
-import MiniBarChart from '@/components/common/MiniBarChart';
+import BarChart from '@/components/charts/BarChart';
 import DecisionButtons from '@/components/common/DecisionButtons';
 import DecisionSheet from '@/components/common/DecisionSheet';
 import AppHeader from '@/components/common/AppHeader';
@@ -144,7 +144,7 @@ const AdminAttendanceScreen = () => {
         <>
           <SectionHeader title="Weekly trend" />
           <Card>
-            <MiniBarChart
+            <BarChart
               data={weekly}
               color={colors.success}
               secondaryColor={colors.warning}

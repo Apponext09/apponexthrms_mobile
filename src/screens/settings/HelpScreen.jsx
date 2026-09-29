@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-import { Linking, Pressable, StyleSheet, View } from 'react-native';
-import { ChevronDown, ChevronUp, Mail } from '@/components/ui/icons';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { ChevronDown, ChevronUp } from '@/components/ui/icons';
 import {
   AppText,
-  Button,
   Card,
   Screen,
   SectionHeader,
   StackHeader,
 } from '@/components/ui';
 import { useTheme } from '@/hooks/useTheme';
-import { ENV } from '@/config/env';
 
 const FAQ = [
   [
@@ -72,19 +70,10 @@ const HelpScreen = () => (
     </Card>
     <SectionHeader title="Still need help?" />
     <Card>
-      <AppText variant="caption" color="mutedForeground" style={styles.contact}>
-        Our support team usually replies within one business day.
+      <AppText variant="caption" color="mutedForeground">
+        For questions about your account, attendance, leave or claims, contact
+        your HR admin. They can also reset your password.
       </AppText>
-      <Button
-        title="Email support"
-        icon={Mail}
-        variant="secondary"
-        onPress={() =>
-          Linking.openURL(
-            `mailto:${ENV.SUPPORT_EMAIL}?subject=HRMS%20app%20support`,
-          )
-        }
-      />
     </Card>
   </Screen>
 );
@@ -96,7 +85,6 @@ const styles = StyleSheet.create({
   item: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   q: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   a: { marginTop: 8 },
-  contact: { marginBottom: 12 },
 });
 
 export default HelpScreen;

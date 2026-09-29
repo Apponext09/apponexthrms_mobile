@@ -21,8 +21,8 @@ import {
   StatCard,
   StatusBadge,
 } from '@/components/ui';
-import MiniBarChart from '@/components/common/MiniBarChart';
-import ProgressRing from '@/components/common/ProgressRing';
+import BarChart from '@/components/charts/BarChart';
+import ProgressRing from '@/components/charts/ProgressRing';
 import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
@@ -176,7 +176,7 @@ const AdminDashboardScreen = () => {
             <>
               <SectionHeader title="This week" />
               <Card>
-                <MiniBarChart
+                <BarChart
                   data={weekly}
                   color={colors.primary}
                   secondaryColor={colors.warning}

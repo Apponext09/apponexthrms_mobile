@@ -11,7 +11,7 @@ import {
 } from '@/components/ui';
 import PunchCard from '@/components/common/PunchCard';
 import LeaveCard from '@/components/common/LeaveCard';
-import ProgressRing from '@/components/common/ProgressRing';
+import ProgressRing from '@/components/charts/ProgressRing';
 import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';

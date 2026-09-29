@@ -3,8 +3,18 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui';
 import { useTheme } from '@/hooks/useTheme';
 
-// data: [{ label, value, secondary? }] rendered as simple vertical bars
-const MiniBarChart = ({ data = [], height = 120, color, secondaryColor }) => {
+// Vertical bar chart.
+// data: [{ label, value, secondary? }] — `secondary` stacks on top in a second color.
+// showValues prints each bar's total above it; formatValue customises that text.
+const BarChart = ({
+  data = [],
+  height = 120,
+  color,
+  secondaryColor,
+  showValues = false,
+  formatValue = v => String(v),
+  barWidth = '62%',
+}) => {
   const { colors } = useTheme();
   const max = Math.max(
     1,
@@ -15,10 +25,19 @@ const MiniBarChart = ({ data = [], height = 120, color, secondaryColor }) => {
       {data.map((d, i) => {
         const v = Number(d.value) || 0;
         const s = Number(d.secondary) || 0;
+        const total = v + s;
         return (
           <View key={`${d.label}-${i}`} style={styles.col}>
+            {showValues ? (
+              <AppText variant="small" color="textSecondary" numberOfLines={1}>
+                {total ? formatValue(total) : ''}
+              </AppText>
+            ) : null}
             <View
-              style={[styles.track, { height, backgroundColor: colors.muted }]}
+              style={[
+                styles.track,
+                { height, width: barWidth, backgroundColor: colors.muted },
+              ]}
             >
               {s > 0 ? (
                 <View
@@ -39,6 +58,7 @@ const MiniBarChart = ({ data = [], height = 120, color, secondaryColor }) => {
               variant="small"
               color="mutedForeground"
               style={styles.label}
+              numberOfLines={1}
             >
               {d.label}
             </AppText>
@@ -54,16 +74,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: 4,
   },
-  col: { flex: 1, alignItems: 'center' },
-  track: {
-    width: '70%',
-    borderRadius: 8,
-    overflow: 'hidden',
-    justifyContent: 'flex-end',
-  },
-  label: { marginTop: 6 },
+  col: { flex: 1, alignItems: 'center', gap: 4 },
+  track: { borderRadius: 6, overflow: 'hidden', justifyContent: 'flex-end' },
+  label: { marginTop: 2 },
 });
 
-export default MiniBarChart;
+export default BarChart;

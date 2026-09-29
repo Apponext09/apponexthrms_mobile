@@ -1,11 +1,9 @@
 import React from 'react';
-import { Alert, Linking, StyleSheet } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import {
   BellRing,
   ClipboardCheck,
-  FileText,
   Moon,
-  ShieldCheck,
   Smartphone,
   Sun,
   Trash2,
@@ -28,7 +26,6 @@ import {
   toggleSetting,
 } from '@/store/slices/settingsSlice';
 import { appStorage } from '@/utils/storage';
-import { ENV } from '@/config/env';
 
 const THEMES = [
   { key: 'system', label: 'System default', icon: Smartphone },
@@ -114,18 +111,8 @@ const SettingsScreen = () => {
         />
       </Card>
 
-      <SectionHeader title="Privacy & data" />
+      <SectionHeader title="Data" />
       <Card style={styles.menu}>
-        <ListRow
-          icon={ShieldCheck}
-          title="Privacy policy"
-          onPress={() => Linking.openURL(ENV.PRIVACY_URL)}
-        />
-        <ListRow
-          icon={FileText}
-          title="Terms of service"
-          onPress={() => Linking.openURL(ENV.TERMS_URL)}
-        />
         <ListRow
           icon={Trash2}
           title="Clear cached data"
