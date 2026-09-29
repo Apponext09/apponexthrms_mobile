@@ -50,7 +50,6 @@ export const Eye = make('eye', 'Eye');
 export const EyeOff = make('eye-off', 'EyeOff');
 export const FileText = make('document-text', 'FileText');
 export const HelpCircle = make('help-circle', 'HelpCircle');
-export const History = make('finger-print', 'History');
 export const Hourglass = make('hourglass', 'Hourglass');
 export const ImagePlus = make('images', 'ImagePlus');
 export const Inbox = make('file-tray', 'Inbox');

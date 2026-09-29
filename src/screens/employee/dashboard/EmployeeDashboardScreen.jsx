@@ -5,7 +5,6 @@ import {
   CalendarCheck,
   CalendarPlus,
   Clock,
-  History,
   Receipt,
   ReceiptText,
   Wallet,
@@ -106,7 +105,7 @@ const EmployeeDashboardScreen = () => {
           onPress={() => navigation.navigate('NewExpense')}
         />
         <QuickAction
-          icon={History}
+          icon={Clock}
           label="Attendance"
           tone="success"
           onPress={() => navigation.navigate('AttendanceTab')}
