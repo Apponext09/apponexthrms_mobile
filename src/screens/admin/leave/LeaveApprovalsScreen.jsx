@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { CheckCheck } from 'lucide-react-native';
 import {
+  Card,
   EmptyState,
   ErrorState,
-  GradientHeader,
   ListSkeleton,
   Screen,
   SegmentedTabs,
@@ -13,6 +13,7 @@ import {
 import LeaveCard from '@/components/common/LeaveCard';
 import DecisionButtons from '@/components/common/DecisionButtons';
 import DecisionSheet from '@/components/common/DecisionSheet';
+import AppHeader from '@/components/common/AppHeader';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import {
   decideLeave,
@@ -56,26 +57,24 @@ const LeaveApprovalsScreen = () => {
 
   return (
     <Screen
-      statusBarLight
       refreshing={source.loading && source.loaded}
       onRefresh={load}
-      header={
-        <GradientHeader subtitle="Team requests" title="Leave approvals" />
-      }
+      hero={<AppHeader />}
     >
-      <SegmentedTabs
-        options={[
-          {
-            key: 'pending',
-            label: 'Pending',
-            count: approvals.data?.length || 0,
-          },
-          { key: 'processed', label: 'Processed' },
-        ]}
-        value={tab}
-        onChange={setTab}
-        style={styles.tabs}
-      />
+      <Card style={styles.tabsCard}>
+        <SegmentedTabs
+          options={[
+            {
+              key: 'pending',
+              label: 'Pending',
+              count: approvals.data?.length || 0,
+            },
+            { key: 'processed', label: 'Processed' },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
+      </Card>
       {source.loading && !source.loaded ? (
         <ListSkeleton />
       ) : source.error ? (
@@ -124,6 +123,8 @@ const LeaveApprovalsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({ tabs: { marginBottom: 14 } });
+const styles = StyleSheet.create({
+  tabsCard: { padding: 8, marginBottom: 14 },
+});
 
 export default LeaveApprovalsScreen;

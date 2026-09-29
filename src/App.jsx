@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { StatusBar } from 'react-native';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { store } from '@/store';
@@ -18,6 +19,7 @@ const Bootstrap = () => {
   }, []);
   return (
     <ToastProvider>
+      <StatusBar translucent backgroundColor="transparent" />
       <RootNavigator />
     </ToastProvider>
   );

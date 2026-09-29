@@ -6,7 +6,6 @@ import {
   Card,
   EmptyState,
   ErrorState,
-  GradientHeader,
   ListSkeleton,
   Screen,
   SectionHeader,
@@ -16,6 +15,7 @@ import {
 import MiniBarChart from '@/components/common/MiniBarChart';
 import DecisionButtons from '@/components/common/DecisionButtons';
 import DecisionSheet from '@/components/common/DecisionSheet';
+import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { selectUser } from '@/store/slices/authSlice';
@@ -117,12 +117,9 @@ const AdminAttendanceScreen = () => {
 
   return (
     <Screen
-      statusBarLight
       refreshing={regularizations.loading && regularizations.loaded}
       onRefresh={load}
-      header={
-        <GradientHeader subtitle="Organization overview" title="Attendance" />
-      }
+      hero={<AppHeader />}
     >
       <View style={styles.grid}>
         <StatCard label="Present" value={today.present ?? 0} tone="success" />

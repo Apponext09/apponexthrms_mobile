@@ -1,20 +1,28 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { CalendarOff, Plus } from 'lucide-react-native';
+import {
+  CalendarCheck,
+  CalendarOff,
+  Hourglass,
+  Layers,
+  Plus,
+  TrendingDown,
+} from 'lucide-react-native';
 import {
   AppText,
   Button,
   Card,
   EmptyState,
   ErrorState,
-  GradientHeader,
   ListSkeleton,
   Screen,
   SectionHeader,
   SegmentedTabs,
+  StatCard,
 } from '@/components/ui';
 import LeaveCard from '@/components/common/LeaveCard';
+import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import {
@@ -34,7 +42,7 @@ const FILTERS = [
 const LeaveScreen = () => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
-  const { colors, radius } = useTheme();
+  const { colors } = useTheme();
   const { balances, mine } = useAppSelector(selectLeave);
   const [filter, setFilter] = useState('all');
 
@@ -46,6 +54,16 @@ const LeaveScreen = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  const totals = useMemo(() => {
+    const b = balances.data || [];
+    return {
+      available: b.reduce((n, x) => n + x.available, 0),
+      taken: b.reduce((n, x) => n + x.consumed, 0),
+      pending: b.reduce((n, x) => n + x.pending, 0),
+      types: b.length,
+    };
+  }, [balances.data]);
 
   const list = useMemo(() => {
     const all = mine.data || [];
@@ -59,40 +77,14 @@ const LeaveScreen = () => {
 
   return (
     <Screen
-      statusBarLight
       refreshing={mine.loading && mine.loaded}
       onRefresh={load}
-      header={
-        <GradientHeader subtitle="Plan your time off" title="Leave">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.balRow}
-          >
-            {(balances.data || []).map(b => (
-              <View
-                key={`${b.leaveTypeId}-${b.name}`}
-                style={[styles.balChip, { borderRadius: radius.lg }]}
-              >
-                <AppText variant="h2" color="#FFFFFF">
-                  {b.available}
-                </AppText>
-                <AppText
-                  variant="small"
-                  color="rgba(255,255,255,0.85)"
-                  numberOfLines={1}
-                >
-                  {b.code || b.name}
-                </AppText>
-              </View>
-            ))}
-            {!balances.data?.length && !balances.loading ? (
-              <AppText variant="caption" color="rgba(255,255,255,0.85)">
-                No leave balances configured
-              </AppText>
-            ) : null}
-          </ScrollView>
-        </GradientHeader>
+      hero={
+        <AppHeader
+          actions={[
+            { icon: Plus, onPress: () => navigation.navigate('ApplyLeave') },
+          ]}
+        />
       }
       footer={
         <View
@@ -112,6 +104,37 @@ const LeaveScreen = () => {
         </View>
       }
     >
+      <View style={styles.grid}>
+        <StatCard
+          icon={CalendarCheck}
+          label="Available"
+          value={totals.available}
+          caption="days across all types"
+          tone="primary"
+        />
+        <StatCard
+          icon={TrendingDown}
+          label="Taken"
+          value={totals.taken}
+          caption="days this year"
+          tone="success"
+        />
+        <StatCard
+          icon={Hourglass}
+          label="Pending"
+          value={totals.pending}
+          caption="awaiting approval"
+          tone="warning"
+        />
+        <StatCard
+          icon={Layers}
+          label="Leave types"
+          value={totals.types}
+          caption="assigned to you"
+          tone="info"
+        />
+      </View>
+
       {balances.data?.length ? (
         <Card style={styles.balDetail}>
           {balances.data.map((b, i) => (
@@ -176,14 +199,7 @@ const LeaveScreen = () => {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  balRow: { gap: 10, marginTop: 16 },
-  balChip: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    minWidth: 80,
-    alignItems: 'center',
-  },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 12 },
   balDetail: { paddingVertical: 4 },
   balLine: {
     flexDirection: 'row',

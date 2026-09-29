@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   RefreshControl,
   ScrollView,
@@ -6,7 +7,10 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';
 
 // Base screen container: safe area, themed background, optional scroll + pull to refresh
@@ -18,20 +22,36 @@ const Screen = ({
   edges = ['top'],
   contentStyle,
   header,
+  hero, // AppHeader rendered inside the scroll view; content overlaps its bottom edge
   statusBarLight = false,
   footer,
   stack = false, // pushed screens (no tab bar) must keep clear of the system nav bar
 }) => {
   const { colors, isDark, spacing } = useTheme();
-  const barStyle = statusBarLight || isDark ? 'light-content' : 'dark-content';
+  // With a hero header the status bar sits on blue until it scrolls away
+  const insets = useSafeAreaInsets();
+  const [pastHero, setPastHero] = useState(false);
+  const onScroll = hero
+    ? e => setPastHero(e.nativeEvent.contentOffset.y > 110)
+    : undefined;
+  const barStyle =
+    isDark || statusBarLight || (hero && !pastHero)
+      ? 'light-content'
+      : 'dark-content';
+  // Tabs stay mounted, so apply the style whenever this screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBarStyle(barStyle, true);
+    }, [barStyle]),
+  );
+  const padding = { padding: spacing.lg, paddingBottom: spacing.xxxl * 2 };
   const body = scroll ? (
     <ScrollView
-      contentContainerStyle={[
-        { padding: spacing.lg, paddingBottom: spacing.xxxl * 2 },
-        contentStyle,
-      ]}
+      contentContainerStyle={[hero ? styles.heroScroll : padding, contentStyle]}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      onScroll={onScroll}
+      scrollEventThrottle={64}
       refreshControl={
         onRefresh ? (
           <RefreshControl
@@ -43,7 +63,14 @@ const Screen = ({
         ) : undefined
       }
     >
-      {children}
+      {hero ? (
+        <>
+          {hero}
+          <View style={[padding, styles.overlap]}>{children}</View>
+        </>
+      ) : (
+        children
+      )}
     </ScrollView>
   ) : (
     <View style={[styles.flex, contentStyle]}>{children}</View>
@@ -51,21 +78,32 @@ const Screen = ({
 
   return (
     <SafeAreaView
-      edges={header ? (stack ? ['bottom'] : []) : edges}
+      edges={header || hero ? (stack ? ['bottom'] : []) : edges}
       style={[styles.flex, { backgroundColor: colors.background }]}
     >
-      <StatusBar
-        barStyle={barStyle}
-        backgroundColor="transparent"
-        translucent
-      />
       {header}
       {body}
       {footer}
+      {hero && pastHero ? (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.statusStrip,
+            { height: insets.top, backgroundColor: colors.background },
+          ]}
+        />
+      ) : null}
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({ flex: { flex: 1 } });
+export const HERO_OVERLAP = 44;
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  heroScroll: { paddingBottom: 0 },
+  statusStrip: { position: 'absolute', top: 0, left: 0, right: 0 },
+  overlap: { marginTop: -HERO_OVERLAP, paddingTop: 0 },
+});
 
 export default Screen;

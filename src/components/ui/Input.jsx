@@ -13,6 +13,8 @@ const Input = ({
   style,
   inputStyle,
   hint,
+  required = false,
+  filled = false,
   ...rest
 }) => {
   const { colors, radius, typography } = useTheme();
@@ -28,6 +30,12 @@ const Input = ({
           style={styles.label}
         >
           {label}
+          {required ? (
+            <AppText variant="captionMedium" color="danger">
+              {' '}
+              *
+            </AppText>
+          ) : null}
         </AppText>
       ) : null}
       <View
@@ -35,7 +43,7 @@ const Input = ({
           styles.field,
           {
             borderRadius: radius.lg,
-            backgroundColor: colors.card,
+            backgroundColor: filled ? colors.inputFill : colors.card,
             borderColor: error
               ? colors.danger
               : focused

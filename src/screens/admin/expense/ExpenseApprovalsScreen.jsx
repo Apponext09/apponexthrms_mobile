@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { CheckCheck } from 'lucide-react-native';
+import { CheckCheck, Hourglass, Wallet } from 'lucide-react-native';
 import {
-  AppText,
+  SectionHeader,
+  StatCard,
   EmptyState,
   ErrorState,
-  GradientHeader,
   ListSkeleton,
   Screen,
   useToast,
@@ -14,6 +14,7 @@ import {
 import ExpenseCard from '@/components/common/ExpenseCard';
 import DecisionButtons from '@/components/common/DecisionButtons';
 import DecisionSheet from '@/components/common/DecisionSheet';
+import AppHeader from '@/components/common/AppHeader';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import {
   decideClaim,
@@ -52,26 +53,25 @@ const ExpenseApprovalsScreen = () => {
 
   return (
     <Screen
-      statusBarLight
       refreshing={approvals.loading && approvals.loaded}
       onRefresh={load}
-      header={
-        <GradientHeader
-          subtitle="Awaiting your review"
-          title="Expense approvals"
-        >
-          <View style={styles.summary}>
-            <AppText variant="h2" color="#FFFFFF">
-              {list.length}
-            </AppText>
-            <AppText variant="caption" color="rgba(255,255,255,0.85)">
-              {' '}
-              claims · {formatCurrency(total)}
-            </AppText>
-          </View>
-        </GradientHeader>
-      }
+      hero={<AppHeader />}
     >
+      <View style={styles.grid}>
+        <StatCard
+          icon={Hourglass}
+          label="Awaiting review"
+          value={list.length}
+          tone="warning"
+        />
+        <StatCard
+          icon={Wallet}
+          label="Total amount"
+          value={formatCurrency(total)}
+          tone="primary"
+        />
+      </View>
+      <SectionHeader title="Pending claims" />
       {approvals.loading && !approvals.loaded ? (
         <ListSkeleton />
       ) : approvals.error ? (
@@ -120,7 +120,7 @@ const ExpenseApprovalsScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  summary: { flexDirection: 'row', alignItems: 'baseline', marginTop: 12 },
+  grid: { flexDirection: 'row', gap: 12 },
 });
 
 export default ExpenseApprovalsScreen;

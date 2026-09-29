@@ -2,7 +2,6 @@ import React, { useCallback, useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
-  Bell,
   Briefcase,
   Building2,
   CalendarClock,
@@ -16,8 +15,6 @@ import {
   Avatar,
   Card,
   EmptyState,
-  GradientHeader,
-  HeaderIconButton,
   Screen,
   SectionHeader,
   Skeleton,
@@ -26,18 +23,15 @@ import {
 } from '@/components/ui';
 import MiniBarChart from '@/components/common/MiniBarChart';
 import ProgressRing from '@/components/common/ProgressRing';
+import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
-import { selectUser } from '@/store/slices/authSlice';
 import {
   fetchAdminStats,
   selectAdminStats,
 } from '@/store/slices/dashboardSlice';
-import {
-  fetchUnreadCount,
-  selectNotifications,
-} from '@/store/slices/notificationSlice';
-import { formatCompact, greeting } from '@/utils/format';
+import { fetchUnreadCount } from '@/store/slices/notificationSlice';
+import { formatCompact } from '@/utils/format';
 
 const Legend = ({ color, label, value }) => (
   <View style={styles.legend}>
@@ -53,9 +47,7 @@ const AdminDashboardScreen = () => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const { colors } = useTheme();
-  const user = useAppSelector(selectUser);
   const stats = useAppSelector(selectAdminStats);
-  const { unread } = useAppSelector(selectNotifications);
 
   const load = useCallback(() => {
     dispatch(fetchAdminStats());
@@ -77,22 +69,9 @@ const AdminDashboardScreen = () => {
 
   return (
     <Screen
-      statusBarLight
       refreshing={stats.loading && stats.loaded}
       onRefresh={load}
-      header={
-        <GradientHeader
-          subtitle={`${greeting()}, ${user?.firstName || 'Admin'}`}
-          title={d.companyInfo?.name || user?.orgName || 'Organization'}
-          right={
-            <HeaderIconButton
-              icon={Bell}
-              badge={unread > 0}
-              onPress={() => navigation.navigate('Notifications')}
-            />
-          }
-        />
-      }
+      hero={<AppHeader />}
     >
       {stats.loading && !stats.loaded ? (
         <View style={styles.grid}>

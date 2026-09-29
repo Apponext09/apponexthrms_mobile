@@ -1,19 +1,26 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Plus, ReceiptText } from 'lucide-react-native';
 import {
-  AppText,
+  BadgeCheck,
+  Hourglass,
+  Plus,
+  ReceiptText,
+  Wallet,
+  XCircle,
+} from 'lucide-react-native';
+import {
   Button,
   EmptyState,
   ErrorState,
-  GradientHeader,
   ListSkeleton,
   Screen,
   SectionHeader,
   SegmentedTabs,
+  StatCard,
 } from '@/components/ui';
 import ExpenseCard from '@/components/common/ExpenseCard';
+import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { fetchMyClaims, selectExpense } from '@/store/slices/expenseSlice';
@@ -32,7 +39,7 @@ const isPending = s => s.startsWith('pending') || s === 'submitted';
 const ExpenseScreen = () => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
-  const { colors, radius } = useTheme();
+  const { colors } = useTheme();
   const { mine } = useAppSelector(selectExpense);
   const [filter, setFilter] = useState('all');
 
@@ -48,9 +55,16 @@ const ExpenseScreen = () => {
       pending: claims
         .filter(c => isPending(c.status))
         .reduce((a, c) => a + c.amount, 0),
+      pendingCount: claims.filter(c => isPending(c.status)).length,
+      approved: claims
+        .filter(c => c.status === 'approved')
+        .reduce((a, c) => a + (c.approvedAmount || c.amount), 0),
       paid: claims
         .filter(c => ['reimbursed', 'paid'].includes(c.status))
         .reduce((a, c) => a + (c.approvedAmount || c.amount), 0),
+      rejected: claims
+        .filter(c => c.status === 'rejected')
+        .reduce((a, c) => a + c.amount, 0),
     }),
     [claims],
   );
@@ -64,31 +78,14 @@ const ExpenseScreen = () => {
 
   return (
     <Screen
-      statusBarLight
       refreshing={mine.loading && mine.loaded}
       onRefresh={load}
-      header={
-        <GradientHeader subtitle="Claims & reimbursements" title="Expenses">
-          <View style={styles.totals}>
-            {[
-              ['Total claimed', totals.claimed],
-              ['In review', totals.pending],
-              ['Reimbursed', totals.paid],
-            ].map(([label, value]) => (
-              <View
-                key={label}
-                style={[styles.totalBox, { borderRadius: radius.lg }]}
-              >
-                <AppText variant="bodyMedium" color="#FFFFFF" numberOfLines={1}>
-                  {formatCurrency(value)}
-                </AppText>
-                <AppText variant="small" color="rgba(255,255,255,0.85)">
-                  {label}
-                </AppText>
-              </View>
-            ))}
-          </View>
-        </GradientHeader>
+      hero={
+        <AppHeader
+          actions={[
+            { icon: Plus, onPress: () => navigation.navigate('NewExpense') },
+          ]}
+        />
       }
       footer={
         <View
@@ -108,7 +105,38 @@ const ExpenseScreen = () => {
         </View>
       }
     >
-      <SectionHeader title="My claims" style={styles.firstHeader} />
+      <View style={styles.grid}>
+        <StatCard
+          icon={Hourglass}
+          label="In review"
+          value={formatCurrency(totals.pending)}
+          caption={`${totals.pendingCount} awaiting approval`}
+          tone="warning"
+        />
+        <StatCard
+          icon={BadgeCheck}
+          label="Approved"
+          value={formatCurrency(totals.approved)}
+          caption="queued for payout"
+          tone="primary"
+        />
+        <StatCard
+          icon={Wallet}
+          label="Reimbursed"
+          value={formatCurrency(totals.paid)}
+          caption="settled claims"
+          tone="success"
+        />
+        <StatCard
+          icon={XCircle}
+          label="Rejected"
+          value={formatCurrency(totals.rejected)}
+          caption="rejected claims"
+          tone="danger"
+        />
+      </View>
+
+      <SectionHeader title="My claims" />
       <SegmentedTabs
         options={FILTERS}
         value={filter}
@@ -141,9 +169,7 @@ const ExpenseScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  totals: { flexDirection: 'row', gap: 8, marginTop: 16 },
-  totalBox: { flex: 1, backgroundColor: 'rgba(255,255,255,0.14)', padding: 10 },
-  firstHeader: { marginTop: 4 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   tabs: { marginBottom: 14 },
   footer: { padding: 16, borderTopWidth: StyleSheet.hairlineWidth },
 });

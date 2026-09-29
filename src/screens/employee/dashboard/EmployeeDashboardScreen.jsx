@@ -2,7 +2,6 @@ import React, { useCallback, useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
-  Bell,
   CalendarCheck,
   CalendarPlus,
   Clock,
@@ -13,10 +12,7 @@ import {
 } from 'lucide-react-native';
 import {
   AppText,
-  Avatar,
   Card,
-  GradientHeader,
-  HeaderIconButton,
   Screen,
   SectionHeader,
   StatCard,
@@ -24,9 +20,9 @@ import {
 import PunchCard from '@/components/common/PunchCard';
 import LeaveCard from '@/components/common/LeaveCard';
 import ProgressRing from '@/components/common/ProgressRing';
+import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
-import { selectUser } from '@/store/slices/authSlice';
 import { fetchMyStats, selectMyStats } from '@/store/slices/dashboardSlice';
 import {
   fetchAttendanceStatus,
@@ -37,11 +33,8 @@ import {
   fetchMyLeaves,
   selectLeave,
 } from '@/store/slices/leaveSlice';
-import {
-  fetchUnreadCount,
-  selectNotifications,
-} from '@/store/slices/notificationSlice';
-import { formatCurrency, greeting } from '@/utils/format';
+import { fetchUnreadCount } from '@/store/slices/notificationSlice';
+import { formatCurrency } from '@/utils/format';
 
 const QuickAction = ({ icon: Icon, label, onPress, tone }) => {
   const { colors, radius } = useTheme();
@@ -75,11 +68,9 @@ const EmployeeDashboardScreen = () => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const { colors } = useTheme();
-  const user = useAppSelector(selectUser);
   const stats = useAppSelector(selectMyStats);
   const { status } = useAppSelector(selectAttendance);
   const { balances, mine } = useAppSelector(selectLeave);
-  const { unread } = useAppSelector(selectNotifications);
 
   const load = useCallback(() => {
     dispatch(fetchMyStats());
@@ -98,39 +89,7 @@ const EmployeeDashboardScreen = () => {
   const recentLeaves = (mine.data || []).slice(0, 2);
 
   return (
-    <Screen
-      refreshing={refreshing}
-      onRefresh={load}
-      statusBarLight
-      header={
-        <GradientHeader
-          subtitle={`${greeting()},`}
-          title={
-            user?.firstName
-              ? `${user.firstName} ${user.lastName || ''}`.trim()
-              : 'Welcome'
-          }
-          right={
-            <View style={styles.headerRight}>
-              <HeaderIconButton
-                icon={Bell}
-                badge={unread > 0}
-                onPress={() => navigation.navigate('Notifications')}
-              />
-              <Pressable onPress={() => navigation.navigate('ProfileTab')}>
-                <Avatar
-                  uri={user?.avatarUrl}
-                  firstName={user?.firstName}
-                  lastName={user?.lastName}
-                  size={42}
-                  style={styles.avatar}
-                />
-              </Pressable>
-            </View>
-          }
-        />
-      }
-    >
+    <Screen refreshing={refreshing} onRefresh={load} hero={<AppHeader />}>
       <PunchCard />
 
       <View style={styles.qaRow}>

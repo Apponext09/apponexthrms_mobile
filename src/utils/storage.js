@@ -53,6 +53,7 @@ export const appStorage = {
   getViewMode: () => AsyncStorage.getItem(KEYS.viewMode),
   setViewMode: mode => AsyncStorage.setItem(KEYS.viewMode, mode),
   async clearSession() {
-    await AsyncStorage.multiRemove([KEYS.user, KEYS.viewMode]);
+    // AsyncStorage v3 renamed multiRemove -> removeMany
+    await AsyncStorage.removeMany([KEYS.user, KEYS.viewMode]);
   },
 };

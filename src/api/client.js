@@ -6,6 +6,12 @@ import { ENDPOINTS } from './endpoints';
 // In-memory copy of the session tokens (persisted copy lives in the keychain)
 let session = { accessToken: null, refreshToken: null };
 let onSessionExpired = () => {};
+// false when the user unticks "Keep me signed in": tokens stay in memory only
+let persistSession = true;
+
+export const setPersistSession = value => {
+  persistSession = value;
+};
 
 export const setSessionTokens = tokens => {
   session = { ...session, ...tokens };
@@ -60,7 +66,7 @@ const refreshTokens = async () => {
     session.refreshToken;
   if (!accessToken) throw new Error('Refresh did not return an access token');
   session = { accessToken, refreshToken };
-  await tokenStorage.save(session);
+  if (persistSession) await tokenStorage.save(session);
   return accessToken;
 };
 

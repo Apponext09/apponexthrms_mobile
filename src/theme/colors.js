@@ -22,7 +22,8 @@ export const lightColors = {
   border: '#DFE6F1',
   input: '#DFE6F1',
   overlay: 'rgba(11, 28, 60, 0.45)',
-  headerGradient: ['#1C65D4', '#1552AE'],
+  headerGradient: ['#2159AE', '#164EA3'],
+  inputFill: '#F7F9FC',
   tabBar: '#FFFFFF',
   skeleton: '#E6ECF5',
 };
@@ -51,6 +52,7 @@ export const darkColors = {
   input: '#27324F',
   overlay: 'rgba(0, 0, 0, 0.6)',
   headerGradient: ['#16243F', '#0F1830'],
+  inputFill: '#141B2E',
   tabBar: '#111628',
   skeleton: '#1B2439',
 };

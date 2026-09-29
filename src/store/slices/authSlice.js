@@ -1,6 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { authService } from '@/api/services/authService';
-import { setSessionTokens, clearSessionTokens } from '@/api/client';
+import {
+  setSessionTokens,
+  clearSessionTokens,
+  setPersistSession,
+} from '@/api/client';
 import { tokenStorage, appStorage } from '@/utils/storage';
 import { normalizeUser } from '@/utils/normalize';
 import { getErrorMessage } from '@/utils/errors';
@@ -35,7 +39,7 @@ export const bootstrapSession = createAsyncThunk('auth/bootstrap', async () => {
 
 export const login = createAsyncThunk(
   'auth/login',
-  async ({ email, password }, { rejectWithValue }) => {
+  async ({ email, password, remember = true }, { rejectWithValue }) => {
     try {
       const data = await authService.login(
         email.trim().toLowerCase(),
@@ -48,7 +52,9 @@ export const login = createAsyncThunk(
         refreshToken: data.refreshToken,
       };
       setSessionTokens(tokens);
-      await tokenStorage.save(tokens);
+      setPersistSession(remember);
+      if (remember) await tokenStorage.save(tokens);
+      else await tokenStorage.clear();
       let user = normalizeUser(data.user, data.roles);
       try {
         // The login payload can have empty names; /auth/me has the full profile
@@ -71,25 +77,26 @@ export const login = createAsyncThunk(
   },
 );
 
+// Clears every local trace of the session; each step is best-effort so a
+// storage failure can never leave the user stuck signed in
+const clearLocalSession = async () => {
+  clearSessionTokens();
+  await Promise.allSettled([tokenStorage.clear(), appStorage.clearSession()]);
+};
+
 export const logout = createAsyncThunk('auth/logout', async () => {
   try {
     await authService.logout();
   } catch {
     // Ignore: we clear the local session regardless
   }
-  await tokenStorage.clear();
-  await appStorage.clearSession();
-  clearSessionTokens();
+  await clearLocalSession();
 });
 
 // Used when the refresh token is rejected
 export const sessionExpired = createAsyncThunk(
   'auth/sessionExpired',
-  async () => {
-    await tokenStorage.clear();
-    await appStorage.clearSession();
-    clearSessionTokens();
-  },
+  clearLocalSession,
 );
 
 export const refreshProfile = createAsyncThunk(
@@ -172,6 +179,7 @@ const authSlice = createSlice({
         state.loginError = payload || error.message;
       })
       .addCase(logout.fulfilled, signOut)
+      .addCase(logout.rejected, signOut)
       .addCase(sessionExpired.fulfilled, signOut)
       .addCase(refreshProfile.fulfilled, (state, { payload }) => {
         state.user = payload;

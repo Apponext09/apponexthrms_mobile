@@ -6,13 +6,15 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StatusBar,
   StyleSheet,
+  Switch,
   View,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Lock, Mail, ShieldCheck } from 'lucide-react-native';
+import { Building2, KeyRound, Lock, LogIn, Mail } from 'lucide-react-native';
 import { AppText, Button, Input } from '@/components/ui';
+import HeroBackground from '@/components/ui/HeroBackground';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { clearLoginError, login, selectAuth } from '@/store/slices/authSlice';
@@ -21,31 +23,49 @@ import { ENV } from '@/config/env';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const LoginScreen = () => {
-  const { colors, spacing, radius, shadow } = useTheme();
+  const { colors, radius, spacing } = useTheme();
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const { loginLoading, loginError } = useAppSelector(selectAuth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState({});
 
   const submit = () => {
     const next = {};
     if (!EMAIL_RE.test(email.trim())) next.email = 'Enter a valid work email';
-    if (password.length < 1) next.password = 'Enter your password';
+    if (!password) next.password = 'Enter your password';
     setErrors(next);
     if (Object.keys(next).length) return;
-    dispatch(login({ email, password }));
+    dispatch(login({ email, password, remember }));
   };
 
-  const onChange = (setter, key) => v => {
-    setter(v);
+  const onChange = (setter, key) => value => {
+    setter(value);
     if (errors[key]) setErrors(e => ({ ...e, [key]: null }));
     if (loginError) dispatch(clearLoginError());
   };
 
+  const contactHr = () =>
+    Alert.alert(
+      'Need help signing in?',
+      'Your HR admin can reset your password or unlock your account.',
+    );
+
+  const sso = () =>
+    Alert.alert(
+      'Company SSO',
+      'Single sign-on is not enabled for the mobile app yet. Please sign in with your portal email and password.',
+    );
+
   return (
-    <View style={[styles.flex, { backgroundColor: colors.background }]}>
+    <View style={[styles.flex, { backgroundColor: colors.card }]}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -54,116 +74,169 @@ const LoginScreen = () => {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           bounces={false}
+          showsVerticalScrollIndicator={false}
         >
-          <LinearGradient
-            colors={colors.headerGradient}
+          <HeroBackground
             style={[styles.hero, { paddingTop: insets.top + 40 }]}
           >
-            <View style={styles.logoWrap}>
+            <View style={[styles.logoTile, { borderRadius: radius.xl }]}>
               <Image
                 source={require('@/assets/images/logo.png')}
                 style={styles.logo}
                 resizeMode="contain"
               />
             </View>
-            <AppText variant="display" color="#FFFFFF" style={styles.heroTitle}>
-              Welcome back
+            <AppText
+              variant="h1"
+              color="#FFFFFF"
+              align="center"
+              style={styles.brand}
+            >
+              {ENV.APP_NAME}
             </AppText>
-            <AppText variant="body" color="rgba(255,255,255,0.85)">
-              Sign in to {ENV.APP_NAME}
+            <AppText
+              variant="body"
+              color="rgba(255,255,255,0.8)"
+              align="center"
+            >
+              Employee self-service
             </AppText>
-          </LinearGradient>
+          </HeroBackground>
 
           <View
-            style={{
-              paddingHorizontal: spacing.lg,
-              paddingBottom: spacing.xxl,
-            }}
+            style={[
+              styles.sheet,
+              {
+                backgroundColor: colors.card,
+                paddingBottom: insets.bottom + spacing.xxl,
+              },
+            ]}
           >
-            <View
-              style={[
-                styles.form,
-                shadow.md,
-                {
-                  backgroundColor: colors.card,
-                  borderRadius: radius.xxl,
-                  borderColor: colors.border,
-                },
-              ]}
+            <AppText variant="display">Sign in</AppText>
+            <AppText
+              variant="body"
+              color="mutedForeground"
+              style={styles.helper}
             >
-              <Input
-                label="Work email"
-                icon={Mail}
-                placeholder="name@company.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect={false}
-                value={email}
-                onChangeText={onChange(setEmail, 'email')}
-                error={errors.email}
-                returnKeyType="next"
-              />
-              <Input
-                label="Password"
-                icon={Lock}
-                placeholder="Enter your password"
-                secure
-                autoCapitalize="none"
-                value={password}
-                onChangeText={onChange(setPassword, 'password')}
-                error={errors.password}
-                returnKeyType="go"
-                onSubmitEditing={submit}
-              />
+              Use the work email your HR team registered for you.
+            </AppText>
+
+            <Input
+              label="Work email"
+              required
+              filled
+              icon={Mail}
+              placeholder="you@company.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect={false}
+              value={email}
+              onChangeText={onChange(setEmail, 'email')}
+              error={errors.email}
+              returnKeyType="next"
+            />
+            <Input
+              label="Password"
+              required
+              filled
+              icon={Lock}
+              placeholder="Enter your password"
+              secure
+              autoCapitalize="none"
+              value={password}
+              onChangeText={onChange(setPassword, 'password')}
+              error={errors.password}
+              returnKeyType="go"
+              onSubmitEditing={submit}
+            />
+
+            <View style={styles.optionsRow}>
               <Pressable
-                style={styles.forgot}
-                hitSlop={8}
-                onPress={() =>
-                  Alert.alert(
-                    'Forgot password?',
-                    'Please contact your HR or administrator to reset your password.',
-                  )
-                }
+                style={styles.remember}
+                onPress={() => setRemember(r => !r)}
               >
-                <AppText variant="captionMedium" color="primary">
+                <Switch
+                  value={remember}
+                  onValueChange={setRemember}
+                  trackColor={{ true: colors.primary, false: colors.border }}
+                  thumbColor="#FFFFFF"
+                />
+                <AppText variant="body">Keep me signed in</AppText>
+              </Pressable>
+              <Pressable hitSlop={8} onPress={contactHr}>
+                <AppText variant="bodyMedium" color="primary">
                   Forgot password?
                 </AppText>
               </Pressable>
-
-              {loginError ? (
-                <View
-                  style={[
-                    styles.error,
-                    {
-                      backgroundColor: colors.dangerSoft,
-                      borderRadius: radius.md,
-                    },
-                  ]}
-                >
-                  <AppText variant="captionMedium" color="danger">
-                    {loginError}
-                  </AppText>
-                </View>
-              ) : null}
-
-              <Button
-                title="Sign in"
-                size="lg"
-                onPress={submit}
-                loading={loginLoading}
-              />
             </View>
 
-            <View style={styles.secure}>
-              <ShieldCheck size={14} color={colors.mutedForeground} />
+            {loginError ? (
+              <View
+                style={[
+                  styles.error,
+                  {
+                    backgroundColor: colors.dangerSoft,
+                    borderRadius: radius.md,
+                  },
+                ]}
+              >
+                <AppText variant="captionMedium" color="danger">
+                  {loginError}
+                </AppText>
+              </View>
+            ) : null}
+
+            <Button
+              title="Sign in"
+              icon={LogIn}
+              size="lg"
+              onPress={submit}
+              loading={loginLoading}
+            />
+
+            <View style={styles.orRow}>
+              <View style={[styles.line, { backgroundColor: colors.border }]} />
               <AppText variant="caption" color="mutedForeground">
-                Secured with encrypted sessions
+                or
+              </AppText>
+              <View style={[styles.line, { backgroundColor: colors.border }]} />
+            </View>
+
+            <Button
+              title="Continue with company SSO"
+              icon={Building2}
+              variant="outline"
+              size="lg"
+              onPress={sso}
+            />
+
+            <View
+              style={[
+                styles.tip,
+                {
+                  backgroundColor: colors.primarySoft,
+                  borderColor: colors.border,
+                  borderRadius: radius.lg,
+                },
+              ]}
+            >
+              <View style={styles.tipTitle}>
+                <KeyRound size={16} color={colors.primary} />
+                <AppText variant="bodyMedium" color="primary">
+                  Use your HRMS portal login
+                </AppText>
+              </View>
+              <AppText variant="caption" color="primary">
+                The same work email and password you use on the web portal.
               </AppText>
             </View>
-            <AppText variant="small" color="mutedForeground" align="center">
-              v{ENV.APP_VERSION}
-            </AppText>
+
+            <Pressable onPress={contactHr} style={styles.trouble}>
+              <AppText variant="caption" color="mutedForeground" align="center">
+                Trouble signing in? Contact your HR admin.
+              </AppText>
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -174,33 +247,44 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   scroll: { flexGrow: 1 },
-  hero: {
-    paddingHorizontal: 24,
-    paddingBottom: 70,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-  },
-  logoWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
+  hero: { alignItems: 'center', paddingBottom: 64 },
+  logoTile: {
+    width: 76,
+    height: 76,
     backgroundColor: '#FFFFFF',
-    padding: 8,
-    marginBottom: 20,
+    padding: 10,
+    marginBottom: 18,
   },
   logo: { width: '100%', height: '100%' },
-  heroTitle: { marginBottom: 4 },
-  form: { padding: 20, marginTop: -60, borderWidth: 1 },
-  forgot: { alignSelf: 'flex-end', marginTop: -6, marginBottom: 18 },
-  error: { padding: 12, marginBottom: 14 },
-  secure: {
+  brand: { marginBottom: 4 },
+  sheet: {
+    flexGrow: 1,
+    marginTop: -28,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 20,
+    paddingTop: 28,
+  },
+  helper: { marginTop: 6, marginBottom: 22 },
+  optionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginTop: 24,
-    marginBottom: 6,
+    justifyContent: 'space-between',
+    marginTop: -2,
+    marginBottom: 20,
   },
+  remember: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  error: { padding: 12, marginBottom: 14 },
+  orRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginVertical: 18,
+  },
+  line: { flex: 1, height: StyleSheet.hairlineWidth },
+  tip: { borderWidth: 1, padding: 14, marginTop: 18, gap: 6 },
+  tipTitle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  trouble: { marginTop: 20 },
 });
 
 export default LoginScreen;

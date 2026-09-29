@@ -7,13 +7,13 @@ import {
   Card,
   EmptyState,
   ErrorState,
-  GradientHeader,
   ListSkeleton,
   Screen,
   SectionHeader,
   StatusBadge,
 } from '@/components/ui';
 import PunchCard from '@/components/common/PunchCard';
+import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import {
@@ -116,10 +116,9 @@ const AttendanceScreen = () => {
 
   return (
     <Screen
-      statusBarLight
       refreshing={history.loading && history.loaded}
       onRefresh={load}
-      header={<GradientHeader subtitle="Track your time" title="Attendance" />}
+      hero={<AppHeader />}
     >
       <PunchCard />
 
