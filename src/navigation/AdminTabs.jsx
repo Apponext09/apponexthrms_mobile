@@ -1,13 +1,6 @@
 import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  CalendarCheck2,
-  Fingerprint,
-  LayoutDashboard,
-  ReceiptText,
-  UserRound,
-} from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { fetchLeaveApprovals, selectLeave } from '@/store/slices/leaveSlice';
@@ -38,16 +31,9 @@ const AdminTabs = () => {
   const expenseCount =
     useAppSelector(selectExpense).approvals.data?.length || 0;
   const icon =
-    Icon =>
+    name =>
     ({ focused, color }) =>
-      (
-        <TabBarIcon
-          icon={Icon}
-          focused={focused}
-          color={color}
-          activeBg={theme.colors.primarySoft}
-        />
-      );
+      <TabBarIcon name={name} focused={focused} color={color} />;
   const badge = {
     tabBarBadgeStyle: { backgroundColor: theme.colors.danger, fontSize: 10 },
   };
@@ -59,20 +45,20 @@ const AdminTabs = () => {
         component={AdminDashboardScreen}
         options={{
           tabBarLabel: 'Dashboard',
-          tabBarIcon: icon(LayoutDashboard),
+          tabBarIcon: icon('grid'),
         }}
       />
       <Tab.Screen
         name="AdminAttendanceTab"
         component={AdminAttendanceScreen}
-        options={{ tabBarLabel: 'Attendance', tabBarIcon: icon(Fingerprint) }}
+        options={{ tabBarLabel: 'Attendance', tabBarIcon: icon('time') }}
       />
       <Tab.Screen
         name="AdminLeaveTab"
         component={LeaveApprovalsScreen}
         options={{
           tabBarLabel: 'Leave',
-          tabBarIcon: icon(CalendarCheck2),
+          tabBarIcon: icon('calendar'),
           tabBarBadge: leaveCount || undefined,
           ...badge,
         }}
@@ -82,7 +68,7 @@ const AdminTabs = () => {
         component={ExpenseApprovalsScreen}
         options={{
           tabBarLabel: 'Expense',
-          tabBarIcon: icon(ReceiptText),
+          tabBarIcon: icon('receipt'),
           tabBarBadge: expenseCount || undefined,
           ...badge,
         }}
@@ -90,7 +76,7 @@ const AdminTabs = () => {
       <Tab.Screen
         name="ProfileTab"
         component={ProfileScreen}
-        options={{ tabBarLabel: 'Profile', tabBarIcon: icon(UserRound) }}
+        options={{ tabBarLabel: 'Profile', tabBarIcon: icon('person-circle') }}
       />
     </Tab.Navigator>
   );

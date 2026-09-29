@@ -1,20 +1,13 @@
 import React from 'react';
-import { View } from 'react-native';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 
-// Icon with a soft pill background when the tab is focused
-const TabBarIcon = ({ icon: Icon, focused, color, activeBg }) => (
-  <View
-    style={{
-      width: 46,
-      height: 30,
-      borderRadius: 15,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: focused ? activeBg : 'transparent',
-    }}
-  >
-    <Icon size={21} color={color} strokeWidth={focused ? 2.4 : 2} />
-  </View>
+// Active tab shows the filled glyph in the brand color; inactive tabs use the outline glyph
+const TabBarIcon = ({ name, focused, color, size = 24 }) => (
+  <Ionicons
+    name={focused ? name : `${name}-outline`}
+    size={size}
+    color={color}
+  />
 );
 
 export default TabBarIcon;

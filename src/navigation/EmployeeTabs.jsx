@@ -1,13 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  CalendarDays,
-  Fingerprint,
-  LayoutDashboard,
-  ReceiptText,
-  UserRound,
-} from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import EmployeeDashboardScreen from '@/screens/employee/dashboard/EmployeeDashboardScreen';
 import AttendanceScreen from '@/screens/employee/attendance/AttendanceScreen';
@@ -23,31 +16,31 @@ const TABS = [
   {
     name: 'HomeTab',
     label: 'Dashboard',
-    icon: LayoutDashboard,
+    icon: 'grid',
     component: EmployeeDashboardScreen,
   },
   {
     name: 'AttendanceTab',
     label: 'Attendance',
-    icon: Fingerprint,
+    icon: 'time',
     component: AttendanceScreen,
   },
   {
     name: 'LeaveTab',
     label: 'Leave',
-    icon: CalendarDays,
+    icon: 'calendar',
     component: LeaveScreen,
   },
   {
     name: 'ExpenseTab',
     label: 'Expense',
-    icon: ReceiptText,
+    icon: 'receipt',
     component: ExpenseScreen,
   },
   {
     name: 'ProfileTab',
     label: 'Profile',
-    icon: UserRound,
+    icon: 'person-circle',
     component: ProfileScreen,
   },
 ];
@@ -65,12 +58,7 @@ const EmployeeTabs = () => {
           options={{
             tabBarLabel: t.label,
             tabBarIcon: ({ focused, color }) => (
-              <TabBarIcon
-                icon={t.icon}
-                focused={focused}
-                color={color}
-                activeBg={theme.colors.primarySoft}
-              />
+              <TabBarIcon name={t.icon} focused={focused} color={color} />
             ),
           }}
         />
