@@ -6,6 +6,8 @@ const initialState = {
   notificationsEnabled: true,
   attendanceReminders: true,
   approvalAlerts: true,
+  // Ask for fingerprint / face before check-in and check-out (when the device has it)
+  biometricPunch: true,
   hydrated: false,
 };
 

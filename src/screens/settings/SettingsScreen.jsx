@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import {
   BellRing,
@@ -8,6 +8,7 @@ import {
   Sun,
   Trash2,
   AlarmClock,
+  Fingerprint,
 } from '@/components/ui/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -25,7 +26,9 @@ import {
   setTheme,
   toggleSetting,
 } from '@/store/slices/settingsSlice';
+import { selectViewMode } from '@/store/slices/authSlice';
 import { appStorage } from '@/utils/storage';
+import { getBiometry } from '@/utils/biometrics';
 
 const THEMES = [
   { key: 'system', label: 'System default', icon: Smartphone },
@@ -37,6 +40,12 @@ const SettingsScreen = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const settings = useAppSelector(selectSettings);
+  const viewMode = useAppSelector(selectViewMode);
+  const [biometry, setBiometry] = useState(null);
+
+  useEffect(() => {
+    getBiometry().then(setBiometry);
+  }, []);
 
   const toggle = key => {
     dispatch(toggleSetting(key));
@@ -82,6 +91,33 @@ const SettingsScreen = () => {
           />
         ))}
       </Card>
+
+      {viewMode === 'employee' ? (
+        <>
+          <SectionHeader title="Attendance" />
+          <Card style={styles.menu}>
+            {biometry ? (
+              <ListRow
+                icon={Fingerprint}
+                iconTone="success"
+                title={`Punch with ${biometry.label.toLowerCase()}`}
+                subtitle="Confirm check in and check out with your phone's biometrics"
+                switchValue={settings.biometricPunch}
+                onSwitch={() => toggle('biometricPunch')}
+                last
+              />
+            ) : (
+              <ListRow
+                icon={Fingerprint}
+                iconTone="success"
+                title="Punch with fingerprint / face"
+                subtitle="Set up fingerprint or face unlock in your phone settings to use this"
+                last
+              />
+            )}
+          </Card>
+        </>
+      ) : null}
 
       <SectionHeader title="Notifications" />
       <Card style={styles.menu}>

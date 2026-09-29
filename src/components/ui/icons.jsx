@@ -77,3 +77,5 @@ export const Users = make('people', 'Users');
 export const Wallet = make('wallet', 'Wallet');
 export const X = make('close', 'X');
 export const XCircle = make('close-circle', 'XCircle');
+export const Fingerprint = make('finger-print', 'Fingerprint');
+export const ScanFace = make('scan', 'ScanFace');

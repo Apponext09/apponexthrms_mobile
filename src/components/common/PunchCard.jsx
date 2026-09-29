@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import dayjs from 'dayjs';
-import { Coffee, LogIn, LogOut, MapPin, Play } from '@/components/ui/icons';
+import {
+  Coffee,
+  Fingerprint,
+  LogIn,
+  LogOut,
+  MapPin,
+  Play,
+  ScanFace,
+} from '@/components/ui/icons';
 import { AppText, Badge, Button, Card } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useTheme } from '@/hooks/useTheme';
@@ -11,7 +19,9 @@ import {
   selectAttendance,
   toggleBreak,
 } from '@/store/slices/attendanceSlice';
+import { selectSettings } from '@/store/slices/settingsSlice';
 import { formatClock, formatTime, titleCase } from '@/utils/format';
+import { getBiometry, verifyBiometric } from '@/utils/biometrics';
 
 // Live clock + check-in/out + break controls, driven by GET /attendance/status
 const PunchCard = () => {
@@ -21,10 +31,20 @@ const PunchCard = () => {
   const { status, punching, breakLoading } = useAppSelector(selectAttendance);
   const s = status.data || {};
   const [now, setNow] = useState(dayjs());
+  const { biometricPunch } = useAppSelector(selectSettings);
+  const [biometry, setBiometry] = useState(null);
+  const useBiometric = biometricPunch && !!biometry;
+  const isFace = biometry && /face/i.test(biometry.label);
+  const BioIcon = isFace ? ScanFace : Fingerprint;
 
   useEffect(() => {
     const t = setInterval(() => setNow(dayjs()), 1000);
     return () => clearInterval(t);
+  }, []);
+
+  // Only offer biometric punching when the device already has it enrolled
+  useEffect(() => {
+    getBiometry().then(setBiometry);
   }, []);
 
   const checkedIn = !!s.isCheckedIn && !s.isCheckedOut;
@@ -39,6 +59,21 @@ const PunchCard = () => {
 
   const doPunch = type => {
     const run = async () => {
+      if (useBiometric) {
+        const check = await verifyBiometric({
+          title: type === 'in' ? 'Confirm check in' : 'Confirm check out',
+          subtitle: `Use your ${biometry.label.toLowerCase()} to continue`,
+        });
+        if (!check.ok) {
+          toast.show(
+            check.cancelled
+              ? 'Verification cancelled. Nothing was recorded.'
+              : `${biometry.label} not recognised. Try again.`,
+            'error',
+          );
+          return;
+        }
+      }
       const res = await dispatch(punch({ type }));
       if (punch.fulfilled.match(res))
         toast.show(
@@ -167,7 +202,7 @@ const PunchCard = () => {
           />
           <Button
             title="Check out"
-            icon={LogOut}
+            icon={useBiometric ? BioIcon : LogOut}
             variant="danger"
             onPress={() => doPunch('out')}
             loading={punching}
@@ -177,8 +212,14 @@ const PunchCard = () => {
         </View>
       ) : (
         <Button
-          title={blocked ? 'Attendance not allowed today' : 'Check in'}
-          icon={LogIn}
+          title={
+            blocked
+              ? 'Attendance not allowed today'
+              : useBiometric
+              ? `Check in with ${biometry.label}`
+              : 'Check in'
+          }
+          icon={useBiometric && !blocked ? BioIcon : LogIn}
           size="lg"
           onPress={() => doPunch('in')}
           loading={punching}
@@ -190,7 +231,9 @@ const PunchCard = () => {
       <View style={styles.locRow}>
         <MapPin size={13} color={colors.mutedForeground} />
         <AppText variant="small" color="mutedForeground">
-          Location is captured with each punch
+          {useBiometric
+            ? `${biometry.label} and location are verified with each punch`
+            : 'Location is captured with each punch'}
         </AppText>
       </View>
     </Card>
