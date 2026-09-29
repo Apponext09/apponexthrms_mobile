@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { Check, ChevronDown } from 'lucide-react-native';
+import { Check, ChevronDown } from '@/components/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import AppText from './AppText';
 import BottomSheet from './BottomSheet';

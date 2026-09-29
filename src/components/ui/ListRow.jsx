@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
-import { Check, ChevronRight } from 'lucide-react-native';
+import { Check, ChevronRight } from '@/components/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import AppText from './AppText';
 
@@ -49,7 +49,7 @@ const ListRow = ({
             { backgroundColor: tone[0], borderRadius: radius.md },
           ]}
         >
-          <Icon size={18} color={tone[1]} />
+          <Icon size={19} color={tone[1]} filled />
         </View>
       ) : null}
       <View style={styles.flex}>

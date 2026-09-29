@@ -10,7 +10,7 @@ import {
   Sun,
   Trash2,
   AlarmClock,
-} from 'lucide-react-native';
+} from '@/components/ui/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Card,

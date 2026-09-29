@@ -9,7 +9,7 @@ import {
   UserPlus,
   Users,
   Wallet,
-} from 'lucide-react-native';
+} from '@/components/ui/icons';
 import {
   AppText,
   Avatar,

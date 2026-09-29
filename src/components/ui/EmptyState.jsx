@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Inbox } from 'lucide-react-native';
+import { Inbox } from '@/components/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import AppText from './AppText';
 import Button from './Button';
@@ -17,7 +17,7 @@ const EmptyState = ({
   return (
     <View style={[styles.wrap, style]}>
       <View style={[styles.icon, { backgroundColor: colors.primarySoft }]}>
-        <Icon size={28} color={colors.primary} />
+        <Icon size={30} color={colors.primary} filled />
       </View>
       <AppText variant="h3" align="center">
         {title}

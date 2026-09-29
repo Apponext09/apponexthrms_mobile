@@ -8,7 +8,7 @@ import {
   ReceiptText,
   Wallet,
   XCircle,
-} from 'lucide-react-native';
+} from '@/components/ui/icons';
 import {
   Button,
   EmptyState,

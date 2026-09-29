@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, Settings } from 'lucide-react-native';
+import { Bell, Settings } from '@/components/ui/icons';
 import { AppText, Avatar } from '@/components/ui';
 import HeroBackground from '@/components/ui/HeroBackground';
 import { HERO_OVERLAP } from '@/components/ui/Screen';
@@ -22,7 +22,7 @@ const IconButton = ({ icon: Icon, onPress, badge }) => (
     hitSlop={6}
     style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
   >
-    <Icon size={20} color="#FFFFFF" strokeWidth={2} />
+    <Icon size={21} color="#FFFFFF" />
     {badge ? <View style={styles.dot} /> : null}
   </Pressable>
 );

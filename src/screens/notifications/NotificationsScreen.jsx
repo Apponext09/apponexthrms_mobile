@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { BellOff } from 'lucide-react-native';
+import { BellOff } from '@/components/ui/icons';
 import {
   AppText,
   Card,

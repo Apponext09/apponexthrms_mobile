@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { CalendarRange } from 'lucide-react-native';
+import { CalendarRange } from '@/components/ui/icons';
 import { AppText, Card, StatusBadge } from '@/components/ui';
 import { useTheme } from '@/hooks/useTheme';
 import { formatDate, formatShortDate } from '@/utils/format';
@@ -18,7 +18,7 @@ const LeaveCard = ({ item, onPress, showEmployee = false, footer }) => {
             { backgroundColor: colors.primarySoft, borderRadius: radius.md },
           ]}
         >
-          <CalendarRange size={18} color={colors.primary} />
+          <CalendarRange size={20} color={colors.primary} filled />
         </View>
         <View style={styles.flex}>
           <AppText variant="bodyMedium" numberOfLines={1}>

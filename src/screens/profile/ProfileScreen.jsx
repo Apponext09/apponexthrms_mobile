@@ -15,7 +15,7 @@ import {
   Settings,
   UserPen,
   UserRound,
-} from 'lucide-react-native';
+} from '@/components/ui/icons';
 import { AppText, Card, ListRow, Screen, SectionHeader } from '@/components/ui';
 import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';

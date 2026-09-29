@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Plus, Trash2 } from 'lucide-react-native';
+import { Plus, Trash2 } from '@/components/ui/icons';
 import {
   AppText,
   Button,

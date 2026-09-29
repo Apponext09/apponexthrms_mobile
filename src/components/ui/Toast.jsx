@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { Animated, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CheckCircle2, AlertCircle, Info } from 'lucide-react-native';
+import { CheckCircle2, AlertCircle, Info } from '@/components/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import AppText from './AppText';
 
@@ -77,7 +77,7 @@ export const ToastProvider = ({ children }) => {
             },
           ]}
         >
-          <Icon size={20} color={tone} />
+          <Icon size={22} color={tone} filled />
           <AppText variant="captionMedium" style={styles.msg}>
             {toast.message}
           </AppText>

@@ -9,7 +9,7 @@ import {
   Receipt,
   ReceiptText,
   Wallet,
-} from 'lucide-react-native';
+} from '@/components/ui/icons';
 import {
   AppText,
   Card,
@@ -55,7 +55,7 @@ const QuickAction = ({ icon: Icon, label, onPress, tone }) => {
           { backgroundColor: bg, borderRadius: radius.lg },
         ]}
       >
-        <Icon size={22} color={fg} />
+        <Icon size={24} color={fg} filled />
       </View>
       <AppText variant="captionMedium" align="center" numberOfLines={1}>
         {label}

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { CheckCheck, Hourglass, Wallet } from 'lucide-react-native';
+import { CheckCheck, Hourglass, Wallet } from '@/components/ui/icons';
 import {
   SectionHeader,
   StatCard,

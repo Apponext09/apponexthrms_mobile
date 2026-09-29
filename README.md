@@ -29,7 +29,7 @@ switch.
 - React Navigation 7 (native stack + bottom tabs)
 - Axios with automatic token refresh
 - react-native-keychain (tokens in Android Keystore / iOS Keychain), AsyncStorage (preferences)
-- Ionicons (filled / outline tab icons) and lucide-react-native (same icon set as the web portal), react-native-svg, react-native-linear-gradient
+- Ionicons for every icon (`src/components/ui/icons.jsx`: outline by default, `filled` on colored tiles), react-native-svg, react-native-linear-gradient
 - @react-native-community/geolocation, @react-native-community/datetimepicker, react-native-image-picker, dayjs
 
 Colors come from the portal's `app-shell-reference` skin in

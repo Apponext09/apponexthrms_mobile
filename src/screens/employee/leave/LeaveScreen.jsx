@@ -8,7 +8,7 @@ import {
   Layers,
   Plus,
   TrendingDown,
-} from 'lucide-react-native';
+} from '@/components/ui/icons';
 import {
   AppText,
   Button,

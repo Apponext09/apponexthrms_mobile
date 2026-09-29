@@ -6,7 +6,7 @@ export { default as Button } from './Button';
 export { default as Card } from './Card';
 export { default as DateField } from './DateField';
 export { default as EmptyState, ErrorState } from './EmptyState';
-export { GradientHeader, StackHeader, HeaderIconButton } from './Header';
+export { StackHeader } from './Header';
 export { default as Input } from './Input';
 export { default as ListRow } from './ListRow';
 export { default as Screen } from './Screen';

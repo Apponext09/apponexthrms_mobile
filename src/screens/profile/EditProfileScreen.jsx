@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Phone, UserRound } from 'lucide-react-native';
+import { Phone, UserRound } from '@/components/ui/icons';
 import {
   AppText,
   Button,

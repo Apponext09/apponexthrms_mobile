@@ -62,11 +62,7 @@ const Button = ({
       ) : (
         <View style={styles.row}>
           {Icon ? (
-            <Icon
-              size={size === 'sm' ? 16 : 18}
-              color={palette.fg}
-              strokeWidth={2.2}
-            />
+            <Icon size={size === 'sm' ? 17 : 19} color={palette.fg} />
           ) : null}
           <AppText
             variant={size === 'sm' ? 'captionMedium' : 'bodyMedium'}

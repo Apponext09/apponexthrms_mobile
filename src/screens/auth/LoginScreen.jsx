@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Building2, KeyRound, Lock, LogIn, Mail } from 'lucide-react-native';
+import { Building2, KeyRound, Lock, LogIn, Mail } from '@/components/ui/icons';
 import { AppText, Button, Input } from '@/components/ui';
 import HeroBackground from '@/components/ui/HeroBackground';
 import { useTheme } from '@/hooks/useTheme';

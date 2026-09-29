@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import { Camera, ImagePlus, X } from 'lucide-react-native';
+import { Camera, ImagePlus, X } from '@/components/ui/icons';
 import { AppText, BottomSheet, Button } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useTheme } from '@/hooks/useTheme';

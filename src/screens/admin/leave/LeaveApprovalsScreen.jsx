@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { CheckCheck } from 'lucide-react-native';
+import { CheckCheck } from '@/components/ui/icons';
 import {
   Card,
   EmptyState,

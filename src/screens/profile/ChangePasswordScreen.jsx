@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Check, Lock } from 'lucide-react-native';
+import { Check, Lock } from '@/components/ui/icons';
 import {
   AppText,
   Button,

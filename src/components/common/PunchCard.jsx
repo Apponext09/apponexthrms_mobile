@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import dayjs from 'dayjs';
-import { Coffee, LogIn, LogOut, MapPin, Play } from 'lucide-react-native';
+import { Coffee, LogIn, LogOut, MapPin, Play } from '@/components/ui/icons';
 import { AppText, Badge, Button, Card } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useTheme } from '@/hooks/useTheme';

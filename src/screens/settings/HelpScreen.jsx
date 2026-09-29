@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
-import { ChevronDown, ChevronUp, Mail } from 'lucide-react-native';
+import { ChevronDown, ChevronUp, Mail } from '@/components/ui/icons';
 import {
   AppText,
   Button,

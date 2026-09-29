@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ClipboardList } from 'lucide-react-native';
+import { ClipboardList } from '@/components/ui/icons';
 import {
   AppText,
   Card,

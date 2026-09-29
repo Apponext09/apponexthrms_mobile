@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Check, X } from 'lucide-react-native';
+import { Check, X } from '@/components/ui/icons';
 import { Button } from '@/components/ui';
 
 const DecisionButtons = ({ onApprove, onReject }) => (

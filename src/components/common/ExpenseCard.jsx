@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Receipt } from 'lucide-react-native';
+import { Receipt } from '@/components/ui/icons';
 import { AppText, Card, StatusBadge } from '@/components/ui';
 import { useTheme } from '@/hooks/useTheme';
 import { formatCurrency, formatDate } from '@/utils/format';
@@ -16,7 +16,7 @@ const ExpenseCard = ({ item, onPress, showEmployee = false, footer }) => {
             { backgroundColor: colors.warningSoft, borderRadius: radius.md },
           ]}
         >
-          <Receipt size={18} color={colors.warning} />
+          <Receipt size={20} color={colors.warning} filled />
         </View>
         <View style={styles.flex}>
           <AppText variant="bodyMedium" numberOfLines={1}>

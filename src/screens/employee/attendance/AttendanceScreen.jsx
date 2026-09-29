@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import dayjs from 'dayjs';
-import { CalendarX2, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { CalendarX2, ChevronLeft, ChevronRight } from '@/components/ui/icons';
 import {
   AppText,
   Card,

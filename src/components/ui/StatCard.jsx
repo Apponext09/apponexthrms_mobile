@@ -32,7 +32,7 @@ const StatCard = ({
             { backgroundColor: bg, borderRadius: radius.md },
           ]}
         >
-          <Icon size={18} color={fg} strokeWidth={2.2} />
+          <Icon size={19} color={fg} filled />
         </View>
       ) : null}
       <AppText variant="h2" numberOfLines={1}>
