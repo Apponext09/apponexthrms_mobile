@@ -1,14 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import {
-  CalendarCheck,
-  CalendarPlus,
-  Clock,
-  Receipt,
-  ReceiptText,
-  Wallet,
-} from '@/components/ui/icons';
+import { CalendarCheck, Clock, Receipt, Wallet } from '@/components/ui/icons';
 import {
   AppText,
   Card,
@@ -34,34 +27,6 @@ import {
 } from '@/store/slices/leaveSlice';
 import { fetchUnreadCount } from '@/store/slices/notificationSlice';
 import { formatCurrency } from '@/utils/format';
-
-const QuickAction = ({ icon: Icon, label, onPress, tone }) => {
-  const { colors, radius } = useTheme();
-  const [bg, fg] = {
-    primary: [colors.primarySoft, colors.primary],
-    success: [colors.successSoft, colors.success],
-    warning: [colors.warningSoft, colors.warning],
-    info: [colors.infoSoft, colors.info],
-  }[tone];
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.qa, pressed && { opacity: 0.7 }]}
-    >
-      <View
-        style={[
-          styles.qaIcon,
-          { backgroundColor: bg, borderRadius: radius.lg },
-        ]}
-      >
-        <Icon size={24} color={fg} filled />
-      </View>
-      <AppText variant="captionMedium" align="center" numberOfLines={1}>
-        {label}
-      </AppText>
-    </Pressable>
-  );
-};
 
 const EmployeeDashboardScreen = () => {
   const navigation = useNavigation();
@@ -90,33 +55,6 @@ const EmployeeDashboardScreen = () => {
   return (
     <Screen refreshing={refreshing} onRefresh={load} hero={<AppHeader />}>
       <PunchCard />
-
-      <View style={styles.qaRow}>
-        <QuickAction
-          icon={CalendarPlus}
-          label="Apply leave"
-          tone="primary"
-          onPress={() => navigation.navigate('ApplyLeave')}
-        />
-        <QuickAction
-          icon={ReceiptText}
-          label="New claim"
-          tone="warning"
-          onPress={() => navigation.navigate('NewExpense')}
-        />
-        <QuickAction
-          icon={Clock}
-          label="Attendance"
-          tone="success"
-          onPress={() => navigation.navigate('AttendanceTab')}
-        />
-        <QuickAction
-          icon={Receipt}
-          label="My claims"
-          tone="info"
-          onPress={() => navigation.navigate('ExpenseTab')}
-        />
-      </View>
 
       <SectionHeader title="This month" />
       <View style={styles.grid}>
@@ -214,18 +152,6 @@ const EmployeeDashboardScreen = () => {
 const styles = StyleSheet.create({
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   avatar: { borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)' },
-  qaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  qa: { width: '23%', alignItems: 'center', gap: 8 },
-  qaIcon: {
-    width: 56,
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   balRow: { gap: 12, paddingRight: 8 },
   balCard: { width: 130, alignItems: 'center' },

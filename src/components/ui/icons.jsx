@@ -31,7 +31,6 @@ export const CalendarCheck = make('calendar', 'CalendarCheck');
 export const CalendarClock = make('calendar-clear', 'CalendarClock');
 export const CalendarDays = make('calendar', 'CalendarDays');
 export const CalendarOff = make('calendar-clear', 'CalendarOff');
-export const CalendarPlus = make('calendar', 'CalendarPlus');
 export const CalendarRange = make('calendar', 'CalendarRange');
 export const CalendarX2 = make('calendar-clear', 'CalendarX2');
 export const Camera = make('camera', 'Camera');
