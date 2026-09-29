@@ -18,9 +18,9 @@ Plus: notifications, settings (light / dark / system theme, notification
 preferences, clear cache), help & FAQ, about, secure sign-out.
 
 Users with an admin role (`organization_admin`, `company_admin`, `hr_manager`,
-`finance`, `super_admin`) or an approver role (`reporting_manager`, `team_lead`)
-get the admin side. If they also have an employee record they can switch views
-from the Profile tab.
+`finance`, `super_admin`) get the admin side. If they also have an employee
+record they can switch views from the Profile tab. Everyone else, including
+team leads and reporting managers, gets the employee side.
 
 ## Tech stack
 

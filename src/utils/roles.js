@@ -18,8 +18,8 @@ const has = (roles, list) =>
 export const isAdmin = roles => has(roles, ADMIN_ROLES);
 export const isApprover = roles => has(roles, APPROVER_ROLES);
 
-// Admin side = org/HR admins and people managers (they approve leave/expenses)
-export const canUseAdminView = roles => isAdmin(roles) || isApprover(roles);
+// Admin side is only for admin roles; team leads / managers use the employee side
+export const canUseAdminView = roles => isAdmin(roles);
 
 // Employee side needs an employee record to punch attendance and apply leave
 export const canUseEmployeeView = user =>
