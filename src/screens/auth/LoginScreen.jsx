@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Building2, KeyRound, Lock, LogIn, Mail } from '@/components/ui/icons';
+import { Building2, Lock, LogIn, Mail } from '@/components/ui/icons';
 import { AppText, Button, Input } from '@/components/ui';
 import HeroBackground from '@/components/ui/HeroBackground';
 import { useTheme } from '@/hooks/useTheme';
@@ -211,27 +211,6 @@ const LoginScreen = () => {
               onPress={sso}
             />
 
-            <View
-              style={[
-                styles.tip,
-                {
-                  backgroundColor: colors.primarySoft,
-                  borderColor: colors.border,
-                  borderRadius: radius.lg,
-                },
-              ]}
-            >
-              <View style={styles.tipTitle}>
-                <KeyRound size={16} color={colors.primary} />
-                <AppText variant="bodyMedium" color="primary">
-                  Use your HRMS portal login
-                </AppText>
-              </View>
-              <AppText variant="caption" color="primary">
-                The same work email and password you use on the web portal.
-              </AppText>
-            </View>
-
             <Pressable onPress={contactHr} style={styles.trouble}>
               <AppText variant="caption" color="mutedForeground" align="center">
                 Trouble signing in? Contact your HR admin.
@@ -282,8 +261,6 @@ const styles = StyleSheet.create({
     marginVertical: 18,
   },
   line: { flex: 1, height: StyleSheet.hairlineWidth },
-  tip: { borderWidth: 1, padding: 14, marginTop: 18, gap: 6 },
-  tipTitle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   trouble: { marginTop: 20 },
 });
 

@@ -79,13 +79,7 @@ const LeaveScreen = () => {
     <Screen
       refreshing={mine.loading && mine.loaded}
       onRefresh={load}
-      hero={
-        <AppHeader
-          actions={[
-            { icon: Plus, onPress: () => navigation.navigate('ApplyLeave') },
-          ]}
-        />
-      }
+      hero={<AppHeader />}
       footer={
         <View
           style={[

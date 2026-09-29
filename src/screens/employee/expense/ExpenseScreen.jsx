@@ -80,13 +80,7 @@ const ExpenseScreen = () => {
     <Screen
       refreshing={mine.loading && mine.loaded}
       onRefresh={load}
-      hero={
-        <AppHeader
-          actions={[
-            { icon: Plus, onPress: () => navigation.navigate('NewExpense') },
-          ]}
-        />
-      }
+      hero={<AppHeader />}
       footer={
         <View
           style={[
