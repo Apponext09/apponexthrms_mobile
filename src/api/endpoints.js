@@ -67,6 +67,13 @@ export const ENDPOINTS = {
   employee: {
     me: '/employees/me',
     list: '/employees',
+    byId: id => `/employees/${id}`,
+    personalInfo: id => `/employees/${id}/personal-info`,
+    professionalInfo: id => `/employees/${id}/professional-info`,
+    editPermission: '/employees/my-edit-permission',
+    updateRequests: '/employees/profile-update-requests',
+    myUpdateRequests: '/employees/my-profile-requests',
+    enrollFace: '/attendance/biometric/enroll',
   },
   notifications: {
     list: '/notifications',
