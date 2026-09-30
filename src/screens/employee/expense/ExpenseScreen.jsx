@@ -28,7 +28,9 @@ import { formatCurrency } from '@/utils/format';
 
 const FILTERS = [
   { key: 'all', label: 'All' },
+  { key: 'draft', label: 'Drafts' },
   { key: 'pending', label: 'In review' },
+  { key: 'returned', label: 'Needs changes' },
   { key: 'approved', label: 'Approved' },
   { key: 'reimbursed', label: 'Paid' },
   { key: 'rejected', label: 'Rejected' },

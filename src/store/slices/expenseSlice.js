@@ -4,6 +4,7 @@ import {
   asList,
   normalizeExpenseCategory,
   normalizeExpenseClaim,
+  normalizeExpensePolicy,
 } from '@/utils/normalize';
 import { remote, addRemoteCases, safeCall } from '../helpers';
 import { logout, sessionExpired } from './authSlice';
@@ -32,11 +33,27 @@ export const fetchMyClaims = createAsyncThunk(
     ),
 );
 
+export const fetchExpensePolicies = createAsyncThunk(
+  'expense/policies',
+  (_, { rejectWithValue }) =>
+    safeCall(
+      async () =>
+        asList(await expenseService.getPolicies())
+          .map(normalizeExpensePolicy)
+          .filter(p => p.isActive),
+      rejectWithValue,
+    ),
+);
+
+// Creates a claim, or updates it when `id` is given (drafts and returned
+// claims). `payload.isDraft` saves without sending for approval.
 export const submitClaim = createAsyncThunk(
   'expense/submit',
-  (payload, { dispatch, rejectWithValue }) =>
+  ({ id, payload }, { dispatch, rejectWithValue }) =>
     safeCall(async () => {
-      const result = await expenseService.submit(payload);
+      const result = id
+        ? await expenseService.update(id, payload)
+        : await expenseService.submit(payload);
       dispatch(fetchMyClaims());
       return result;
     }, rejectWithValue),
@@ -66,6 +83,7 @@ export const decideClaim = createAsyncThunk(
 
 const initialState = {
   categories: remote([]),
+  policies: remote([]),
   mine: remote([]),
   approvals: remote([]),
   submitting: false,
@@ -77,6 +95,7 @@ const expenseSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     addRemoteCases(builder, fetchExpenseCategories, 'categories');
+    addRemoteCases(builder, fetchExpensePolicies, 'policies');
     addRemoteCases(builder, fetchMyClaims, 'mine');
     addRemoteCases(builder, fetchExpenseApprovals, 'approvals');
     builder

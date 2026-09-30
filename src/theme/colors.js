@@ -74,7 +74,7 @@ export const statusTone = {
   late: 'warning',
   half_day: 'warning',
   draft: 'info',
-  returned: 'info',
+  returned: 'warning',
   on_leave: 'info',
   rejected: 'danger',
   cancelled: 'danger',

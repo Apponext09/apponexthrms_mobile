@@ -16,8 +16,21 @@ export const expenseService = {
       .then(unwrap),
   getClaim: id => apiClient.get(E.claim(id)).then(unwrap),
   getSummary: () => apiClient.get(E.summary).then(unwrap),
-  // payload: { title, description, claimDate, items: [{ categoryId, claimedAmount, expenseDate, description, merchantName }] }
+  // Same payload as the portal: { title, claimDate, categoryId, paymentMethod,
+  //   merchantName, description, projectCostCenter, isDraft, items: [{
+  //   categoryId, expenseDate, claimedAmount, merchantName, description,
+  //   receiptUrl, receiptFileName, receiptFileType, receiptFileSize,
+  //   employeeJustification }] }
   submit: payload => apiClient.post(E.claims, payload).then(unwrap),
+  // Edit a draft or a claim returned for correction
+  update: (id, payload) => apiClient.put(E.claim(id), payload).then(unwrap),
+
+  getPolicies: () => apiClient.get(E.policies).then(unwrap),
+  // { isValid, violations: [string] }
+  validatePolicy: (categoryId, amount, receiptProvided) =>
+    apiClient
+      .post(E.validatePolicy, { categoryId, amount, receiptProvided })
+      .then(unwrap),
 
   // Approver side
   getPendingApprovals: () =>

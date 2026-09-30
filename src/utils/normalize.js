@@ -251,6 +251,44 @@ export const normalizeExpenseCategory = (c = {}) => ({
   isReceiptMandatory: Boolean(
     pick(c, 'isReceiptMandatory', 'is_receipt_mandatory'),
   ),
+  // Receipt is only required at or above this amount
+  minAmountForReceipt: Number(
+    pick(c, 'minAmountForReceipt', 'min_amount_for_receipt') || 0,
+  ),
+});
+
+export const normalizeExpensePolicy = (p = {}) => ({
+  id: pick(p, 'id'),
+  name: pick(p, 'policyName', 'policy_name') || 'Policy',
+  categoryId: Number(pick(p, 'categoryId', 'category_id') || 0),
+  maxPerClaim: Number(pick(p, 'maxLimitPerClaim', 'max_limit_per_claim') || 0),
+  isActive:
+    pick(p, 'isActive', 'is_active') !== false &&
+    pick(p, 'isActive', 'is_active') !== 0,
+});
+
+export const normalizeClaimItem = (it = {}) => ({
+  id: pick(it, 'id'),
+  categoryId: Number(pick(it, 'categoryId', 'category_id')) || null,
+  categoryName: pick(it, 'categoryName', 'category_name') || '',
+  expenseDate: pick(it, 'expenseDate', 'expense_date'),
+  amount: Number(pick(it, 'claimedAmount', 'claimed_amount', 'amount') || 0),
+  approvedAmount: Number(pick(it, 'approvedAmount', 'approved_amount') || 0),
+  merchantName: pick(it, 'merchantName', 'merchant_name') || '',
+  description: pick(it, 'description') || '',
+  receiptUrl: pick(it, 'receiptUrl', 'receipt_url') || '',
+  receiptFileName: pick(it, 'receiptFileName', 'receipt_file_name') || '',
+  justification:
+    pick(it, 'employeeJustification', 'employee_justification') || '',
+});
+
+export const normalizeApprovalLog = (l = {}) => ({
+  id: pick(l, 'id'),
+  approverName: capitalize(pick(l, 'approverName', 'approver_name') || ''),
+  approverRole: pick(l, 'approverRole', 'approver_role') || '',
+  action: String(pick(l, 'action') || '').toLowerCase(),
+  comments: pick(l, 'comments', 'comment') || '',
+  createdAt: pick(l, 'createdAt', 'created_at'),
 });
 
 export const normalizeExpenseClaim = (c = {}) => ({
@@ -291,7 +329,13 @@ export const normalizeExpenseClaim = (c = {}) => ({
         .filter(Boolean)
         .join(' '),
   ),
-  items: Array.isArray(c.items) ? c.items : [],
+  categoryId: Number(pick(c, 'categoryId', 'category_id')) || null,
+  paymentMethod: pick(c, 'paymentMethod', 'payment_method') || '',
+  projectCostCenter: pick(c, 'projectCostCenter', 'project_cost_center') || '',
+  items: (Array.isArray(c.items) ? c.items : []).map(normalizeClaimItem),
+  timeline: (Array.isArray(c.timeline) ? c.timeline : []).map(
+    normalizeApprovalLog,
+  ),
 });
 
 export const normalizeNotification = (n = {}) => ({

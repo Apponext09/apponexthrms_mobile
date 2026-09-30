@@ -57,6 +57,8 @@ export const ENDPOINTS = {
     summary: '/expenses/dashboard/summary',
     managerApprove: id => `/expenses/claims/${id}/manager-approve`,
     reject: id => `/expenses/claims/${id}/reject`,
+    policies: '/expenses/policies',
+    validatePolicy: '/expenses/policies/validate',
   },
   settings: {
     org: '/settings/org-settings',
