@@ -121,9 +121,14 @@ export const saveProfilePhoto = createAsyncThunk(
 
 export const changePassword = createAsyncThunk(
   'profile/changePassword',
-  ({ currentPassword, newPassword }, { rejectWithValue }) =>
+  ({ currentPassword, newPassword, confirmPassword }, { rejectWithValue }) =>
     safeCall(
-      () => authService.changePassword(currentPassword, newPassword),
+      () =>
+        authService.changePassword(
+          currentPassword,
+          newPassword,
+          confirmPassword,
+        ),
       rejectWithValue,
     ),
 );

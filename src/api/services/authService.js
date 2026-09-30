@@ -8,8 +8,12 @@ export const authService = {
   me: () => apiClient.get(ENDPOINTS.auth.me).then(unwrap),
   updateProfile: payload =>
     apiClient.put(ENDPOINTS.auth.profile, payload).then(unwrap),
-  changePassword: (currentPassword, newPassword) =>
+  changePassword: (currentPassword, newPassword, confirmPassword) =>
     apiClient
-      .post(ENDPOINTS.auth.changePassword, { currentPassword, newPassword })
+      .post(ENDPOINTS.auth.changePassword, {
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      })
       .then(unwrap),
 };

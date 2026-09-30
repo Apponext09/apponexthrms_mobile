@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Check, Lock } from '@/components/ui/icons';
+import { Lock } from '@/components/ui/icons';
 import {
   AppText,
   Button,
@@ -10,22 +10,16 @@ import {
   StackHeader,
   useToast,
 } from '@/components/ui';
-import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { changePassword, selectProfile } from '@/store/slices/profileSlice';
 
-const RULES = [
-  { test: p => p.length >= 8, label: 'At least 8 characters' },
-  { test: p => /[A-Z]/.test(p), label: 'One uppercase letter' },
-  { test: p => /[0-9]/.test(p), label: 'One number' },
-  { test: p => /[^A-Za-z0-9]/.test(p), label: 'One special character' },
-];
-
+// Same rules as the portal's Settings > Security page: all three fields are
+// required and the new passwords must match. The server checks the current
+// password; it has no length or strength rules.
 const ChangePasswordScreen = () => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { colors } = useTheme();
   const { saving } = useAppSelector(selectProfile);
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
@@ -35,24 +29,32 @@ const ChangePasswordScreen = () => {
   const save = async () => {
     const e = {};
     if (!current) e.current = 'Enter your current password';
-    if (!RULES.every(r => r.test(next)))
-      e.next = 'Password does not meet the requirements';
-    if (next !== confirm) e.confirm = 'Passwords do not match';
+    if (!next) e.next = 'Enter a new password';
+    if (!confirm) e.confirm = 'Confirm the new password';
+    else if (next !== confirm) e.confirm = 'New passwords do not match';
     setErrors(e);
     if (Object.keys(e).length) return;
     const res = await dispatch(
-      changePassword({ currentPassword: current, newPassword: next }),
+      changePassword({
+        currentPassword: current,
+        newPassword: next,
+        confirmPassword: confirm,
+      }),
     );
     if (changePassword.fulfilled.match(res)) {
-      toast.show('Password changed');
+      toast.show('Password updated');
       navigation.goBack();
-    } else toast.show(res.payload || 'Could not change password', 'error');
+    } else toast.show(res.payload || 'Could not update password', 'error');
   };
 
   return (
     <Screen stack header={<StackHeader title="Change password" />}>
+      <AppText variant="caption" color="mutedForeground" style={styles.intro}>
+        This is the same password you use on the web portal.
+      </AppText>
       <Input
         label="Current password"
+        required
         icon={Lock}
         secure
         value={current}
@@ -61,33 +63,16 @@ const ChangePasswordScreen = () => {
       />
       <Input
         label="New password"
+        required
         icon={Lock}
         secure
         value={next}
         onChangeText={setNext}
         error={errors.next}
       />
-      <View style={styles.rules}>
-        {RULES.map(r => {
-          const ok = r.test(next);
-          return (
-            <View key={r.label} style={styles.rule}>
-              <Check
-                size={14}
-                color={ok ? colors.success : colors.mutedForeground}
-              />
-              <AppText
-                variant="caption"
-                color={ok ? 'success' : 'mutedForeground'}
-              >
-                {r.label}
-              </AppText>
-            </View>
-          );
-        })}
-      </View>
       <Input
         label="Confirm new password"
+        required
         icon={Lock}
         secure
         value={confirm}
@@ -105,8 +90,7 @@ const ChangePasswordScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  rules: { marginTop: -6, marginBottom: 16, gap: 4 },
-  rule: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  intro: { marginBottom: 16 },
 });
 
 export default ChangePasswordScreen;

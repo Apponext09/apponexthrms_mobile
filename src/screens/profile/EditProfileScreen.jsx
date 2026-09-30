@@ -66,7 +66,6 @@ const EditProfileScreen = () => {
     if (section === 'basic')
       return {
         firstName: emp.firstName,
-        middleName: emp.middleName,
         lastName: emp.lastName,
         mobile: emp.mobile,
         dateOfBirth: emp.dateOfBirth ? dayjs(emp.dateOfBirth).toDate() : null,
@@ -148,7 +147,6 @@ const EditProfileScreen = () => {
     if (section === 'basic')
       return {
         firstName: form.firstName.trim(),
-        middleName: (form.middleName || '').trim() || null,
         lastName: (form.lastName || '').trim(),
         mobile: (form.mobile || '').trim() || null,
         dateOfBirth: form.dateOfBirth ? toApiDate(form.dateOfBirth) : null,
@@ -197,7 +195,6 @@ const EditProfileScreen = () => {
       {section === 'basic' ? (
         <>
           {field('firstName', 'First name', { required: true })}
-          {field('middleName', 'Middle name (optional)')}
           {field('lastName', 'Last name')}
           {field('mobile', 'Mobile number', {
             keyboardType: 'number-pad',
