@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  AppState,
+  Linking,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import dayjs from 'dayjs';
 import {
   Coffee,
@@ -24,6 +31,18 @@ import {
 import { selectSettings } from '@/store/slices/settingsSlice';
 import { formatClock, formatTime, titleCase } from '@/utils/format';
 import { getBiometry, verifyBiometric } from '@/utils/biometrics';
+import {
+  checkLocationPermission,
+  requestLocationPermission,
+} from '@/utils/location';
+
+// Shown after a punch that went through without GPS coordinates
+const NO_LOCATION_NOTE = {
+  denied: 'Location permission was not given, so no location was saved.',
+  blocked: 'Location is blocked for this app, so no location was saved.',
+  unavailable: "Your phone's location is off, so no location was saved.",
+  timeout: 'Could not get your location in time, so none was saved.',
+};
 
 // Live clock + check-in/out + break controls, driven by GET /attendance/status
 const PunchCard = () => {
@@ -50,6 +69,35 @@ const PunchCard = () => {
   useEffect(() => {
     getBiometry().then(setBiometry);
   }, []);
+
+  // Ask for location up front (the portal asks when the page opens), and
+  // re-check when the user comes back from the phone's settings
+  const [locPermission, setLocPermission] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    const refresh = async ask => {
+      let st = await checkLocationPermission();
+      if (st !== 'granted' && ask) st = await requestLocationPermission();
+      if (alive)
+        setLocPermission(p => (st === 'denied' && p === 'blocked' ? p : st));
+    };
+    refresh(true);
+    const sub = AppState.addEventListener('change', state => {
+      if (state === 'active') refresh(false);
+    });
+    return () => {
+      alive = false;
+      sub.remove();
+    };
+  }, []);
+
+  const fixLocation = async () => {
+    if (locPermission === 'blocked') {
+      Linking.openSettings();
+      return;
+    }
+    setLocPermission(await requestLocationPermission());
+  };
 
   // Punch locations and org rules (check-out required or not)
   useEffect(() => {
@@ -86,15 +134,24 @@ const PunchCard = () => {
         }
       }
       const res = await dispatch(punch({ type }));
-      if (punch.fulfilled.match(res))
-        toast.show(
+      if (punch.fulfilled.match(res)) {
+        const message =
           type === 'in'
             ? requireCheckout
-              ? 'Checked in successfully'
+              ? 'Checked in successfully.'
               : 'Checked in. Check-out is not required.'
-            : 'Checked out. See you tomorrow!',
+            : 'Checked out. See you tomorrow!';
+        const note = NO_LOCATION_NOTE[res.payload?.locationStatus];
+        toast.show(
+          note ? `${message} ${note}` : message,
+          note ? 'info' : 'success',
         );
-      else toast.show(res.payload || 'Punch failed', 'error');
+        if (
+          res.payload?.locationStatus === 'denied' ||
+          res.payload?.locationStatus === 'blocked'
+        )
+          setLocPermission(res.payload.locationStatus);
+      } else toast.show(res.payload || 'Punch failed', 'error');
     };
     if (type === 'out') {
       Alert.alert(
@@ -270,14 +327,25 @@ const PunchCard = () => {
         />
       )}
 
-      <View style={styles.locRow}>
-        <MapPin size={13} color={colors.mutedForeground} />
-        <AppText variant="small" color="mutedForeground">
-          {useBiometric
-            ? `${biometry.label} and location are verified with each punch`
-            : 'Location is captured with each punch'}
-        </AppText>
-      </View>
+      {locPermission && locPermission !== 'granted' ? (
+        <Pressable onPress={fixLocation} style={styles.locRow} hitSlop={8}>
+          <MapPin size={13} color={colors.warning} />
+          <AppText variant="small" color="warning">
+            {locPermission === 'blocked'
+              ? 'Location is blocked · Open settings'
+              : 'Location permission needed · Allow'}
+          </AppText>
+        </Pressable>
+      ) : (
+        <View style={styles.locRow}>
+          <MapPin size={13} color={colors.mutedForeground} />
+          <AppText variant="small" color="mutedForeground">
+            {useBiometric
+              ? `${biometry.label} and location are verified with each punch`
+              : 'Location is captured with each punch'}
+          </AppText>
+        </View>
+      )}
     </Card>
   );
 };

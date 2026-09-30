@@ -4,7 +4,7 @@ import { attendanceService } from '@/api/services/attendanceService';
 import { settingsService } from '@/api/services/settingsService';
 import { leaveService } from '@/api/services/leaveService';
 import { normalizeWeeklyOffRule } from '@/utils/workingDays';
-import { getCurrentPosition } from '@/utils/location';
+import { getPunchLocation } from '@/utils/location';
 import {
   normalizeAttendanceRecord,
   normalizeHoliday,
@@ -86,14 +86,15 @@ export const punch = createAsyncThunk(
   'attendance/punch',
   ({ type }, { dispatch, getState, rejectWithValue }) =>
     safeCall(async () => {
-      const coords = await getCurrentPosition();
+      const { coords, status } = await getPunchLocation();
       const locationId = getState().attendance.selectedLocationId;
       const result =
         type === 'in'
           ? await attendanceService.checkIn(coords, locationId)
           : await attendanceService.checkOut(coords, locationId);
       dispatch(fetchAttendanceStatus());
-      return result;
+      // locationStatus lets the UI say when a punch went in without GPS
+      return { result, locationStatus: status };
     }, rejectWithValue),
 );
 
