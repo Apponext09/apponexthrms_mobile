@@ -15,6 +15,7 @@ import LeaveDetailScreen from '@/screens/employee/leave/LeaveDetailScreen';
 import NewExpenseScreen from '@/screens/employee/expense/NewExpenseScreen';
 import ExpenseDetailScreen from '@/screens/employee/expense/ExpenseDetailScreen';
 import WorkHourRequestScreen from '@/screens/employee/attendance/WorkHourRequestScreen';
+import LeaveEncashmentScreen from '@/screens/employee/leave/LeaveEncashmentScreen';
 import NotificationsScreen from '@/screens/notifications/NotificationsScreen';
 import EditProfileScreen from '@/screens/profile/EditProfileScreen';
 import ChangePasswordScreen from '@/screens/profile/ChangePasswordScreen';
@@ -79,6 +80,10 @@ const RootNavigator = () => {
             <Stack.Screen
               name="WorkHourRequest"
               component={WorkHourRequestScreen}
+            />
+            <Stack.Screen
+              name="LeaveEncashment"
+              component={LeaveEncashmentScreen}
             />
             <Stack.Screen
               name="Notifications"

@@ -1,10 +1,12 @@
 import dayjs from 'dayjs';
+import { checkDay } from './workingDays';
 
 // Day status rules, matching the web portal's attendance calendar:
 // - a record uses the server status (on_leave / absent / holiday), then late,
 //   early check-out, half day, otherwise present
-// - no record: company holiday -> holiday, Saturday/Sunday -> weekly_off,
-//   past weekday -> absent, today -> none, future -> upcoming
+// - no record: holiday -> holiday, day off under the holiday calendar's
+//   weekly-off rules -> weekly_off (the portal's attendance page assumes
+//   Saturday and Sunday), past working day -> absent, today/future -> none
 // Days before the joining date have no status (the portal counts them as absent).
 // Extra on mobile: a past day with a check-in but no check-out is flagged
 // 'missed_punch_out' (only when the organisation requires check-out) so the
@@ -27,7 +29,8 @@ export const dateKey = d => dayjs(d).format('YYYY-MM-DD');
 export const getDayStatus = ({
   date,
   record,
-  holiday,
+  holidays = [],
+  weeklyOffRules = [],
   requireCheckout = true,
   joinedOn,
 }) => {
@@ -50,18 +53,9 @@ export const getDayStatus = ({
     if (st === 'half_day') return 'half_day';
     return 'present';
   }
-  if (d.isAfter(today, 'day')) return holiday ? 'holiday' : null;
-  if (holiday) return 'holiday';
-  if (d.day() === 0 || d.day() === 6) return 'weekly_off';
-  if (d.isSame(today, 'day')) return null;
+  const off = checkDay(d, holidays, weeklyOffRules);
+  if (off.holiday) return 'holiday';
+  if (!off.isWorking) return 'weekly_off';
+  if (!d.isBefore(today, 'day')) return null;
   return 'absent';
-};
-
-// Company (non-optional) holidays keyed by YYYY-MM-DD
-export const holidayMap = holidays => {
-  const map = {};
-  (holidays || []).forEach(h => {
-    if (h.date && !h.isOptional) map[dateKey(h.date)] = h;
-  });
-  return map;
 };

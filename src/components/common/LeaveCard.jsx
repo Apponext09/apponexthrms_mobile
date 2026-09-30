@@ -8,7 +8,7 @@ import { formatDate, formatShortDate } from '@/utils/format';
 const LeaveCard = ({ item, onPress, showEmployee = false, footer }) => {
   const { colors, radius } = useTheme();
   const sameDay = item.startDate === item.endDate;
-  const days = item.isHalfDay ? 0.5 : item.totalDays;
+  const days = item.totalDays || (item.isHalfDay ? 0.5 : 0);
   return (
     <Card onPress={onPress} style={styles.card}>
       <View style={styles.row}>

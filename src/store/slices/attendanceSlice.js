@@ -2,6 +2,8 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import dayjs from 'dayjs';
 import { attendanceService } from '@/api/services/attendanceService';
 import { settingsService } from '@/api/services/settingsService';
+import { leaveService } from '@/api/services/leaveService';
+import { normalizeWeeklyOffRule } from '@/utils/workingDays';
 import { getCurrentPosition } from '@/utils/location';
 import {
   normalizeAttendanceRecord,
@@ -39,13 +41,22 @@ export const fetchAttendanceSetup = createAsyncThunk(
   'attendance/setup',
   (_, { rejectWithValue }) =>
     safeCall(async () => {
-      const [locations, org, holidays] = await Promise.allSettled([
+      const [locations, org, calendar, optional] = await Promise.allSettled([
         attendanceService.getPermittedLocations(),
         settingsService.getOrgSettings(),
-        settingsService.getMyHolidays(dayjs().year()),
+        leaveService.getCalendar(),
+        leaveService.getOptionalHolidays(),
       ]);
-      const loc = locations.status === 'fulfilled' ? locations.value || {} : {};
-      const settings = org.status === 'fulfilled' ? org.value || {} : {};
+      const ok = r => (r.status === 'fulfilled' ? r.value || {} : {});
+      const loc = ok(locations);
+      const settings = ok(org);
+      const cal = ok(calendar);
+      // Optional holidays only count as days off once selected
+      const selected = new Set(
+        asList(ok(optional))
+          .filter(h => h.selected)
+          .map(h => String(h.id)),
+      );
       return {
         locations: (loc.locations || []).map(l => ({
           id: String(l.locationId || l.id),
@@ -59,10 +70,12 @@ export const fetchAttendanceSetup = createAsyncThunk(
           settings.require_checkout === undefined
             ? true
             : !!settings.require_checkout,
-        holidays:
-          holidays.status === 'fulfilled'
-            ? asList(holidays.value).map(normalizeHoliday)
-            : [],
+        sickLeaveDocThreshold: Number(settings.sick_leave_doc_threshold) || 3,
+        holidays: asList(cal.holidays).map(h => ({
+          ...normalizeHoliday(h),
+          selected: selected.has(String(h.id)),
+        })),
+        weeklyOffRules: asList(cal.weeklyOffRules).map(normalizeWeeklyOffRule),
       };
     }, rejectWithValue),
 );
@@ -147,7 +160,9 @@ const initialState = {
     locations: [],
     allowRemote: false,
     requireCheckout: true,
+    sickLeaveDocThreshold: 3,
     holidays: [],
+    weeklyOffRules: [],
   }),
   selectedLocationId: null,
   submittingRegularization: false,

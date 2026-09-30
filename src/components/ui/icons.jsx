@@ -79,3 +79,4 @@ export const X = make('close', 'X');
 export const XCircle = make('close-circle', 'XCircle');
 export const Fingerprint = make('finger-print', 'Fingerprint');
 export const ScanFace = make('scan', 'ScanFace');
+export const FileText = make('document-text', 'FileText');

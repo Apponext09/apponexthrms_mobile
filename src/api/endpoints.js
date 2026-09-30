@@ -41,6 +41,14 @@ export const ENDPOINTS = {
     processedApprovals: '/leaves/approvals/processed',
     approve: id => `/leaves/approvals/${id}/approve`,
     reject: id => `/leaves/approvals/${id}/reject`,
+    calendar: '/leaves/calendar',
+    optionalHolidays: '/leaves/optional-holidays',
+    optionalHoliday: selectionId => `/leaves/optional-holidays/${selectionId}`,
+    myEncashments: '/leaves/encashments/my',
+    encashmentPreview: '/leaves/encashments/preview',
+    encashmentRequest: '/leaves/encashments/request',
+    analyzeCertificate: '/leaves/ai/analyze-certificate',
+    settings: '/settings/org-leave-settings/resolved',
   },
   expense: {
     categories: '/expenses/categories',
@@ -56,6 +64,7 @@ export const ENDPOINTS = {
   },
   employee: {
     me: '/employees/me',
+    list: '/employees',
   },
   notifications: {
     list: '/notifications',

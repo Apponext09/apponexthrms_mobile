@@ -329,3 +329,17 @@ export const normalizeRegularization = (r = {}) => ({
   hrComments: pick(r, 'hrComments', 'hr_comments') || '',
   createdAt: pick(r, 'createdAt', 'created_at'),
 });
+
+export const normalizeEncashment = (e = {}) => ({
+  id: pick(e, 'id'),
+  leaveType: capitalize(
+    pick(e, 'leaveTypeName', 'leave_type_name', 'leaveName', 'leave_name') ||
+      'Leave',
+  ),
+  days: Number(pick(e, 'encashmentDays', 'encashment_days') || 0),
+  dailyRate: Number(pick(e, 'dailyRate', 'daily_rate') || 0),
+  amount: Number(pick(e, 'totalAmount', 'total_amount') || 0),
+  date: pick(e, 'encashmentDate', 'encashment_date', 'createdAt', 'created_at'),
+  status: String(pick(e, 'status') || 'pending').toLowerCase(),
+  reason: pick(e, 'reason') || '',
+});

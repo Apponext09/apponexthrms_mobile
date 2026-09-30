@@ -13,9 +13,37 @@ export const leaveService = {
       })
       .then(unwrap),
   getApplication: id => apiClient.get(E.application(id)).then(unwrap),
-  // payload: { leaveTypeId, startDate, endDate, reason, isHalfDay, halfDayPeriod }
+  // Same payload as the portal: { leaveTypeId, startDate, endDate, isHalfDay,
+  //   customDuration, reason, backupPerson, emergencyContact,
+  //   attachedFileName, dayWiseBreakdown: [{ date, dayType }] }
   apply: payload => apiClient.post(E.applications, payload).then(unwrap),
-  cancel: (id, reason) => apiClient.post(E.cancel(id), { reason }).then(unwrap),
+  cancel: (id, reason) =>
+    apiClient.post(E.cancel(id), reason ? { reason } : {}).then(unwrap),
+
+  // { holidays, weeklyOffRules } from the employee's holiday calendar
+  getCalendar: () => apiClient.get(E.calendar).then(unwrap),
+  // Org leave rules, e.g. enableBackupPerson
+  getSettings: () => apiClient.get(E.settings).then(unwrap),
+
+  getOptionalHolidays: () => apiClient.get(E.optionalHolidays).then(unwrap),
+  selectOptionalHoliday: holidayId =>
+    apiClient.post(E.optionalHolidays, { holidayId }).then(unwrap),
+  removeOptionalHoliday: selectionId =>
+    apiClient.delete(E.optionalHoliday(selectionId)).then(unwrap),
+
+  getMyEncashments: () => apiClient.get(E.myEncashments).then(unwrap),
+  previewEncashment: (leaveTypeId, encashmentDays) =>
+    apiClient
+      .post(E.encashmentPreview, { leaveTypeId, encashmentDays })
+      .then(unwrap),
+  requestEncashment: ({ leaveTypeId, encashmentDays, reason }) =>
+    apiClient
+      .post(E.encashmentRequest, { leaveTypeId, encashmentDays, reason })
+      .then(unwrap),
+
+  // AI check of a medical certificate image (portal does this on upload)
+  analyzeCertificate: (base64Data, mimeType) =>
+    apiClient.post(E.analyzeCertificate, { base64Data, mimeType }).then(unwrap),
   withdraw: (id, reason) =>
     apiClient.post(E.withdraw(id), { reason }).then(unwrap),
 

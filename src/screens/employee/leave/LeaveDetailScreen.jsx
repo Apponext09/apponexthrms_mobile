@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import {
   AppText,
-  BottomSheet,
   Button,
   Card,
-  Input,
   Screen,
   StackHeader,
   StatusBadge,
@@ -37,30 +35,34 @@ const LeaveDetailScreen = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const leave = params?.leave || {};
-  const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
   const canCancel =
     leave.status?.startsWith('pending') ||
     leave.status === 'submitted' ||
     leave.status === 'approved';
 
+  // Like the portal: a confirmation, no reason required
   const doCancel = async () => {
-    if (reason.trim().length < 10) {
-      toast.show('Please give a reason of at least 10 characters', 'error');
-      return;
-    }
     setLoading(true);
-    const res = await dispatch(
-      cancelLeave({ id: leave.id, reason: reason.trim() }),
-    );
+    const res = await dispatch(cancelLeave({ id: leave.id }));
     setLoading(false);
     if (cancelLeave.fulfilled.match(res)) {
-      setOpen(false);
       toast.show('Leave request cancelled');
       navigation.goBack();
     } else toast.show(res.payload || 'Could not cancel leave', 'error');
   };
+
+  const confirmCancel = () =>
+    Alert.alert(
+      'Cancel this leave request?',
+      'Your balance will be restored.',
+      [
+        { text: 'Keep it', style: 'cancel' },
+        { text: 'Cancel request', style: 'destructive', onPress: doCancel },
+      ],
+    );
+
+  const days = leave.totalDays || (leave.isHalfDay ? 0.5 : 0);
 
   return (
     <Screen stack header={<StackHeader title="Leave details" />}>
@@ -81,7 +83,7 @@ const LeaveDetailScreen = () => {
         <Row label="To" value={formatDate(leave.endDate, 'ddd, DD MMM YYYY')} />
         <Row
           label="Duration"
-          value={`${leave.isHalfDay ? 0.5 : leave.totalDays} day(s)${
+          value={`${days} ${days === 1 ? 'day' : 'days'}${
             leave.isHalfDay && leave.halfDayPeriod
               ? ` · ${titleCase(leave.halfDayPeriod)}`
               : ''
@@ -98,30 +100,11 @@ const LeaveDetailScreen = () => {
         <Button
           title="Cancel request"
           variant="outline"
-          onPress={() => setOpen(true)}
+          onPress={confirmCancel}
+          loading={loading}
           style={styles.cancel}
         />
       ) : null}
-
-      <BottomSheet
-        visible={open}
-        onClose={() => setOpen(false)}
-        title="Cancel leave request"
-      >
-        <Input
-          label="Reason"
-          placeholder="Why are you cancelling? (min 10 characters)"
-          multiline
-          value={reason}
-          onChangeText={setReason}
-        />
-        <Button
-          title="Confirm cancellation"
-          variant="danger"
-          onPress={doCancel}
-          loading={loading}
-        />
-      </BottomSheet>
     </Screen>
   );
 };

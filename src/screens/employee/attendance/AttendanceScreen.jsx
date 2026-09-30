@@ -38,12 +38,8 @@ import {
   selectAttendance,
 } from '@/store/slices/attendanceSlice';
 import { selectProfile } from '@/store/slices/profileSlice';
-import {
-  DAY_STATUS,
-  dateKey,
-  getDayStatus,
-  holidayMap,
-} from '@/utils/attendanceDay';
+import { DAY_STATUS, dateKey, getDayStatus } from '@/utils/attendanceDay';
+import { checkDay } from '@/utils/workingDays';
 import { formatDate, formatDuration, formatTime } from '@/utils/format';
 
 const TABS = [
@@ -197,10 +193,7 @@ const AttendanceScreen = () => {
   }, [load]);
 
   const isCurrentMonth = month.isSame(dayjs(), 'month');
-  const holidays = useMemo(
-    () => holidayMap(setup.data.holidays),
-    [setup.data.holidays],
-  );
+  const { holidays, weeklyOffRules } = setup.data;
 
   const byDate = useMemo(() => {
     const map = {};
@@ -217,22 +210,23 @@ const AttendanceScreen = () => {
       const d = month.add(i, 'day');
       const key = dateKey(d);
       const record = byDate[key] || null;
-      const holiday = holidays[key] || null;
+      const off = checkDay(d, holidays, weeklyOffRules);
       list.push({
         date: key,
         record,
-        holiday,
+        holiday: off.holiday || null,
         status: getDayStatus({
           date: d,
           record,
-          holiday,
+          holidays,
+          weeklyOffRules,
           requireCheckout,
           joinedOn,
         }),
       });
     }
     return list;
-  }, [month, byDate, holidays, requireCheckout, joinedOn]);
+  }, [month, byDate, holidays, weeklyOffRules, requireCheckout, joinedOn]);
 
   const pastDays = useMemo(
     () => days.filter(d => !dayjs(d.date).isAfter(dayjs(), 'day')),
