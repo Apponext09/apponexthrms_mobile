@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import {
@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/icons';
 import {
   AppText,
-  Avatar,
   BottomSheet,
   Button,
   Card,
@@ -77,7 +76,7 @@ const ProfileScreen = () => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { colors, radius } = useTheme();
+  const { colors } = useTheme();
   const { user, viewMode } = useAppSelector(selectAuth);
   const { employee, sections, saving } = useAppSelector(selectProfile);
   const emp = employee.data || {};
@@ -176,51 +175,13 @@ const ProfileScreen = () => {
     >
       {hasEmployee ? (
         <>
-          <Card style={styles.photoCard}>
-            <Avatar
-              uri={emp.avatarUrl || user?.avatarUrl}
-              firstName={emp.firstName || user?.firstName}
-              lastName={emp.lastName || user?.lastName}
-              size={64}
-            />
-            <View style={styles.flex}>
-              <AppText variant="h3">
-                {`${emp.firstName || ''} ${emp.lastName || ''}`.trim() ||
-                  user?.email}
-              </AppText>
-              <AppText variant="caption" color="mutedForeground">
-                {[emp.designation, emp.employeeCode]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </AppText>
-            </View>
-            {canEdit ? (
-              <Pressable
-                onPress={() => setPhotoOpen(true)}
-                hitSlop={8}
-                style={[
-                  styles.photoBtn,
-                  {
-                    backgroundColor: colors.primarySoft,
-                    borderRadius: radius.md,
-                  },
-                ]}
-              >
-                <Camera size={18} color={colors.primary} />
-              </Pressable>
-            ) : null}
-          </Card>
-
           {viewMode === 'employee' ? (
             <Card
-              elevated={false}
               style={[
                 styles.lockCard,
-                {
-                  backgroundColor: editUnlocked
-                    ? colors.successSoft
-                    : colors.muted,
-                  borderColor: editUnlocked ? colors.successSoft : colors.muted,
+                editUnlocked && {
+                  backgroundColor: colors.successSoft,
+                  borderColor: colors.successSoft,
                 },
               ]}
             >
@@ -379,6 +340,14 @@ const ProfileScreen = () => {
 
       <SectionHeader title="Account" />
       <Card style={styles.menu}>
+        {canEdit ? (
+          <ListRow
+            icon={Camera}
+            title="Change profile photo"
+            subtitle="Also used for face attendance"
+            onPress={() => setPhotoOpen(true)}
+          />
+        ) : null}
         <ListRow
           icon={KeyRound}
           title="Change password"
@@ -490,14 +459,7 @@ const ProfileScreen = () => {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  photoCard: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  photoBtn: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  lockCard: { marginTop: 12, gap: 10 },
+  lockCard: { gap: 10 },
   lockRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   lockBtn: { alignSelf: 'flex-start', marginLeft: 30 },
   fields: { gap: 14 },
