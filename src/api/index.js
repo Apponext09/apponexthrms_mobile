@@ -7,3 +7,4 @@ export * from './services/leaveService';
 export * from './services/expenseService';
 export * from './services/profileService';
 export * from './services/notificationService';
+export * from './services/settingsService';

@@ -7,6 +7,14 @@ export const attendanceService = {
   getStatus: () => apiClient.get(E.status).then(unwrap),
   getToday: () => apiClient.get(E.today).then(unwrap),
   getMyShift: () => apiClient.get(E.myShift).then(unwrap),
+  // { locations: [{ locationId, name, isPrimary, radiusMeters }], allowRemote, allowField }
+  getPermittedLocations: () => apiClient.get(E.permittedLocations).then(unwrap),
+  // Work hour (regularization) requests raised by the signed-in employee
+  getMyRegularizations: () => apiClient.get(E.regularization).then(unwrap),
+  // payload: { date, isDateRange, endDate, checkIn, checkOut, actualCheckIn,
+  //   actualCheckOut, attendanceRecordId, reason, dayType, comment }
+  createRegularization: payload =>
+    apiClient.post(E.regularization, payload).then(unwrap),
   getHistory: ({ page = 1, pageSize = 20, startDate, endDate } = {}) =>
     apiClient
       .get(E.history, { params: { page, pageSize, startDate, endDate } })
@@ -14,14 +22,23 @@ export const attendanceService = {
         items: res.data?.data || [],
         meta: res.data?.meta || {},
       })),
-  // method 'mobile' is recorded as check_in_method = 'mobile' on the server
-  checkIn: coords =>
+  // method 'mobile' is recorded as check_in_method = 'mobile' on the server.
+  // locationId is the punch location picked from the permitted locations.
+  checkIn: (coords, locationId) =>
     apiClient
-      .post(E.checkIn, { method: 'mobile', ...(coords || {}) })
+      .post(E.checkIn, {
+        method: 'mobile',
+        ...(coords || {}),
+        ...(locationId ? { checkInLocation: Number(locationId) } : {}),
+      })
       .then(unwrap),
-  checkOut: coords =>
+  checkOut: (coords, locationId) =>
     apiClient
-      .post(E.checkOut, { method: 'mobile', ...(coords || {}) })
+      .post(E.checkOut, {
+        method: 'mobile',
+        ...(coords || {}),
+        ...(locationId ? { checkOutLocation: Number(locationId) } : {}),
+      })
       .then(unwrap),
   breakIn: () => apiClient.post(E.breakIn, {}).then(unwrap),
   breakOut: () => apiClient.post(E.breakOut, {}).then(unwrap),

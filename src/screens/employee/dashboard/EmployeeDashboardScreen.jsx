@@ -10,6 +10,7 @@ import {
   StatCard,
 } from '@/components/ui';
 import PunchCard from '@/components/common/PunchCard';
+import MissedPunchBanner from '@/components/common/MissedPunchBanner';
 import LeaveCard from '@/components/common/LeaveCard';
 import ProgressRing from '@/components/charts/ProgressRing';
 import AppHeader from '@/components/common/AppHeader';
@@ -18,6 +19,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { fetchMyStats, selectMyStats } from '@/store/slices/dashboardSlice';
 import {
   fetchAttendanceStatus,
+  fetchMyRegularizations,
   selectAttendance,
 } from '@/store/slices/attendanceSlice';
 import {
@@ -39,6 +41,7 @@ const EmployeeDashboardScreen = () => {
   const load = useCallback(() => {
     dispatch(fetchMyStats());
     dispatch(fetchAttendanceStatus());
+    dispatch(fetchMyRegularizations());
     dispatch(fetchLeaveBalances());
     dispatch(fetchMyLeaves());
     dispatch(fetchUnreadCount());
@@ -55,6 +58,7 @@ const EmployeeDashboardScreen = () => {
   return (
     <Screen refreshing={refreshing} onRefresh={load} hero={<AppHeader />}>
       <PunchCard />
+      <MissedPunchBanner />
 
       <SectionHeader title="This month" />
       <View style={styles.grid}>

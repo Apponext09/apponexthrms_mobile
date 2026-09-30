@@ -21,6 +21,7 @@ export const ENDPOINTS = {
     breakIn: '/attendance/break-in',
     breakOut: '/attendance/break-out',
     myShift: '/attendance/my-shift',
+    permittedLocations: '/attendance/my-permitted-locations',
     regularization: '/attendance/regularization',
     regManagerPending: '/attendance/regularization/manager-pending',
     regHrPending: '/attendance/regularization/hr-pending',
@@ -48,6 +49,10 @@ export const ENDPOINTS = {
     summary: '/expenses/dashboard/summary',
     managerApprove: id => `/expenses/claims/${id}/manager-approve`,
     reject: id => `/expenses/claims/${id}/reject`,
+  },
+  settings: {
+    org: '/settings/org-settings',
+    myHolidays: '/settings/holidays/my-calendar',
   },
   employee: {
     me: '/employees/me',

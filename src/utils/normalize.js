@@ -113,6 +113,9 @@ export const normalizeAttendanceRecord = (r = {}) => ({
   isLate: Boolean(pick(r, 'isLate', 'is_late')),
   isEarlyDeparture: Boolean(pick(r, 'isEarlyDeparture', 'is_early_departure')),
   method: pick(r, 'checkInMethod', 'check_in_method') || '',
+  checkOutMethod: pick(r, 'checkOutMethod', 'check_out_method') || '',
+  locationName: pick(r, 'checkInLocationName', 'check_in_location_name') || '',
+  isRegularized: Boolean(pick(r, 'isRegularized', 'is_regularized')),
 });
 
 export const normalizeLeaveType = (t = {}) => ({
@@ -298,4 +301,31 @@ export const normalizeNotification = (n = {}) => ({
   isRead: Boolean(pick(n, 'isRead', 'is_read', 'readAt', 'read_at')),
   createdAt: pick(n, 'createdAt', 'created_at'),
   type: pick(n, 'type', 'category') || 'general',
+});
+
+export const normalizeHoliday = (h = {}) => ({
+  id: pick(h, 'id'),
+  name: capitalize(pick(h, 'holidayName', 'holiday_name', 'name') || 'Holiday'),
+  date: pick(h, 'holidayDate', 'holiday_date', 'date'),
+  type: pick(h, 'holidayType', 'holiday_type', 'type') || '',
+  isOptional: Boolean(pick(h, 'isOptional', 'is_optional')),
+});
+
+// Work hour (attendance regularization) request
+export const normalizeRegularization = (r = {}) => ({
+  id: pick(r, 'id'),
+  date: pick(r, 'requestDate', 'request_date'),
+  endDate: pick(r, 'endDate', 'end_date'),
+  isDateRange: Boolean(pick(r, 'isDateRange', 'is_date_range')),
+  checkIn: pick(r, 'requestedCheckInTime', 'requested_check_in_time'),
+  checkOut: pick(r, 'requestedCheckOutTime', 'requested_check_out_time'),
+  actualCheckIn: pick(r, 'actualCheckInTime', 'actual_check_in_time'),
+  actualCheckOut: pick(r, 'actualCheckOutTime', 'actual_check_out_time'),
+  reason: pick(r, 'reason') || '',
+  dayType: pick(r, 'dayType', 'day_type') || '',
+  comment: pick(r, 'comment') || '',
+  status: String(pick(r, 'status') || 'pending_manager').toLowerCase(),
+  managerComments: pick(r, 'managerComments', 'manager_comments') || '',
+  hrComments: pick(r, 'hrComments', 'hr_comments') || '',
+  createdAt: pick(r, 'createdAt', 'created_at'),
 });

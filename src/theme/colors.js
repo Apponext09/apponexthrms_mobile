@@ -80,4 +80,11 @@ export const statusTone = {
   cancelled: 'danger',
   withdrawn: 'danger',
   absent: 'danger',
+  missed_punch_out: 'danger',
+  early_checkout: 'warning',
+  holiday: 'info',
+  weekly_off: 'neutral',
+  pending_hr: 'warning',
+  manager_approved: 'info',
+  pending_workflow: 'warning',
 };

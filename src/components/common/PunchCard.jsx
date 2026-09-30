@@ -10,13 +10,15 @@ import {
   Play,
   ScanFace,
 } from '@/components/ui/icons';
-import { AppText, Badge, Button, Card } from '@/components/ui';
+import { AppText, Badge, Button, Card, SelectField } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import {
+  fetchAttendanceSetup,
   punch,
   selectAttendance,
+  selectPunchLocation,
   toggleBreak,
 } from '@/store/slices/attendanceSlice';
 import { selectSettings } from '@/store/slices/settingsSlice';
@@ -28,8 +30,10 @@ const PunchCard = () => {
   const { colors, radius } = useTheme();
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { status, punching, breakLoading } = useAppSelector(selectAttendance);
+  const { status, punching, breakLoading, setup, selectedLocationId } =
+    useAppSelector(selectAttendance);
   const s = status.data || {};
+  const { locations, requireCheckout } = setup.data;
   const [now, setNow] = useState(dayjs());
   const { biometricPunch } = useAppSelector(selectSettings);
   const [biometry, setBiometry] = useState(null);
@@ -47,8 +51,15 @@ const PunchCard = () => {
     getBiometry().then(setBiometry);
   }, []);
 
-  const checkedIn = !!s.isCheckedIn && !s.isCheckedOut;
-  const done = !!s.isCheckedOut;
+  // Punch locations and org rules (check-out required or not)
+  useEffect(() => {
+    if (!setup.loaded && !setup.loading) dispatch(fetchAttendanceSetup());
+  }, [dispatch, setup.loaded, setup.loading]);
+
+  // In check-in-only organisations the day is complete once checked in
+  const checkedIn = !!s.isCheckedIn && !s.isCheckedOut && requireCheckout;
+  const done = !!s.isCheckedOut || (!!s.isCheckedIn && !requireCheckout);
+  const noShift = s.hasShift === false && !s.isHoliday && !s.isWeekOff;
   const blocked =
     !!s.isAttendanceBlocked ||
     ((s.isHoliday || s.isWeekOff) && !s.isPunchAllowedOnHoliday);
@@ -78,7 +89,9 @@ const PunchCard = () => {
       if (punch.fulfilled.match(res))
         toast.show(
           type === 'in'
-            ? 'Checked in successfully'
+            ? requireCheckout
+              ? 'Checked in successfully'
+              : 'Checked in. Check-out is not required.'
             : 'Checked out. See you tomorrow!',
         );
       else toast.show(res.payload || 'Punch failed', 'error');
@@ -151,6 +164,19 @@ const PunchCard = () => {
         </View>
       ) : null}
 
+      {noShift ? (
+        <View
+          style={[
+            styles.notice,
+            { backgroundColor: colors.warningSoft, borderRadius: radius.md },
+          ]}
+        >
+          <AppText variant="captionMedium" color="warning">
+            No work shift is assigned for today. Contact HR to assign one.
+          </AppText>
+        </View>
+      ) : null}
+
       <View
         style={[
           styles.stats,
@@ -168,7 +194,9 @@ const PunchCard = () => {
           <AppText variant="small" color="mutedForeground">
             CHECK OUT
           </AppText>
-          <AppText variant="bodyMedium">{formatTime(s.checkOutTime)}</AppText>
+          <AppText variant="bodyMedium">
+            {requireCheckout ? formatTime(s.checkOutTime) : 'Not needed'}
+          </AppText>
         </View>
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
         <View style={styles.stat}>
@@ -187,6 +215,20 @@ const PunchCard = () => {
             ? ` · ${titleCase(shift.currentEntryStatus)}`
             : ''}
         </AppText>
+      ) : null}
+
+      {!done && locations.length > 1 ? (
+        <SelectField
+          label="Punch location"
+          options={locations.map(l => ({
+            value: l.id,
+            label: l.name,
+            description: l.isPrimary ? 'Primary location' : undefined,
+          }))}
+          value={selectedLocationId}
+          onChange={id => dispatch(selectPunchLocation(id))}
+          style={styles.location}
+        />
       ) : null}
 
       {done ? null : checkedIn ? (
@@ -256,6 +298,7 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 12, marginTop: 16 },
   flex: { flex: 1 },
   checkIn: { marginTop: 16 },
+  location: { marginTop: 16, marginBottom: 0 },
   locRow: {
     flexDirection: 'row',
     alignItems: 'center',

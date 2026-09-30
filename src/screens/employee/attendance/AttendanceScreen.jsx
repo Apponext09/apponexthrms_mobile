@@ -1,9 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import dayjs from 'dayjs';
-import { CalendarX2, ChevronLeft, ChevronRight } from '@/components/ui/icons';
+import {
+  CalendarX2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Plus,
+} from '@/components/ui/icons';
 import {
   AppText,
+  Badge,
+  Button,
   Card,
   EmptyState,
   ErrorState,
@@ -17,102 +26,169 @@ import BarChart from '@/components/charts/BarChart';
 import MonthCalendar from '@/components/charts/MonthCalendar';
 import StackedBar from '@/components/charts/StackedBar';
 import PunchCard from '@/components/common/PunchCard';
+import MissedPunchBanner from '@/components/common/MissedPunchBanner';
 import AppHeader from '@/components/common/AppHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import {
   fetchAttendanceHistory,
+  fetchAttendanceSetup,
   fetchAttendanceStatus,
+  fetchMyRegularizations,
   selectAttendance,
 } from '@/store/slices/attendanceSlice';
-import { formatDuration, formatTime } from '@/utils/format';
-
-// One status per day: late > half day > present, else whatever the server says
-const dayStatus = record => {
-  if (record.isLate) return 'late';
-  if (record.status === 'half_day') return 'half_day';
-  if (record.checkInTime) return 'present';
-  return record.status || 'absent';
-};
-
-const STATUS_TONE = {
-  present: 'success',
-  late: 'warning',
-  half_day: 'info',
-  on_leave: 'info',
-  absent: 'danger',
-};
+import { selectProfile } from '@/store/slices/profileSlice';
+import {
+  DAY_STATUS,
+  dateKey,
+  getDayStatus,
+  holidayMap,
+} from '@/utils/attendanceDay';
+import { formatDate, formatDuration, formatTime } from '@/utils/format';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'calendar', label: 'Calendar' },
   { key: 'log', label: 'Daily log' },
+  { key: 'requests', label: 'Requests' },
 ];
 
-const DayRow = ({ record }) => {
+// Statuses that can be corrected with a work hour request
+const FIXABLE = ['missed_punch_out', 'absent', 'late', 'early_checkout'];
+
+const DayRow = ({ day, onFix }) => {
   const { colors, radius } = useTheme();
-  const d = dayjs(record.date);
-  const status = dayStatus(record);
+  const d = dayjs(day.date);
+  const r = day.record;
+  const meta = DAY_STATUS[day.status];
   return (
     <Card style={styles.dayCard}>
-      <View
-        style={[
-          styles.dateBox,
-          { backgroundColor: colors.primarySoft, borderRadius: radius.md },
-        ]}
-      >
-        <AppText variant="h3" color="primary">
-          {d.format('DD')}
-        </AppText>
-        <AppText variant="small" color="primary">
-          {d.format('ddd').toUpperCase()}
-        </AppText>
-      </View>
-      <View style={styles.flex}>
-        <View style={styles.times}>
-          <View>
-            <AppText variant="small" color="mutedForeground">
-              IN
-            </AppText>
-            <AppText variant="bodyMedium">
-              {formatTime(record.checkInTime)}
-            </AppText>
-          </View>
-          <View>
-            <AppText variant="small" color="mutedForeground">
-              OUT
-            </AppText>
-            <AppText variant="bodyMedium">
-              {formatTime(record.checkOutTime)}
-            </AppText>
-          </View>
-          <View>
-            <AppText variant="small" color="mutedForeground">
-              HOURS
-            </AppText>
-            <AppText variant="bodyMedium">
-              {record.durationMinutes
-                ? formatDuration(record.durationMinutes)
-                : '—'}
-            </AppText>
-          </View>
+      <View style={styles.dayTop}>
+        <View
+          style={[
+            styles.dateBox,
+            { backgroundColor: colors.primarySoft, borderRadius: radius.md },
+          ]}
+        >
+          <AppText variant="h3" color="primary">
+            {d.format('DD')}
+          </AppText>
+          <AppText variant="small" color="primary">
+            {d.format('ddd').toUpperCase()}
+          </AppText>
         </View>
+        <View style={styles.flex}>
+          {r ? (
+            <View style={styles.times}>
+              <View>
+                <AppText variant="small" color="mutedForeground">
+                  IN
+                </AppText>
+                <AppText variant="bodyMedium">
+                  {formatTime(r.checkInTime)}
+                </AppText>
+              </View>
+              <View>
+                <AppText variant="small" color="mutedForeground">
+                  OUT
+                </AppText>
+                <AppText variant="bodyMedium">
+                  {formatTime(r.checkOutTime)}
+                </AppText>
+              </View>
+              <View>
+                <AppText variant="small" color="mutedForeground">
+                  HOURS
+                </AppText>
+                <AppText variant="bodyMedium">
+                  {r.durationMinutes ? formatDuration(r.durationMinutes) : '—'}
+                </AppText>
+              </View>
+            </View>
+          ) : (
+            <AppText variant="caption" color="mutedForeground">
+              {day.holiday ? day.holiday.name : 'No punches'}
+            </AppText>
+          )}
+        </View>
+        {meta ? <Badge label={meta.label} tone={meta.tone} /> : null}
       </View>
-      <StatusBadge status={status} />
+      {r?.locationName || r?.isRegularized ? (
+        <AppText
+          variant="caption"
+          color="mutedForeground"
+          style={styles.dayMeta}
+        >
+          {[r.locationName, r.isRegularized ? 'Regularized' : null]
+            .filter(Boolean)
+            .join(' · ')}
+        </AppText>
+      ) : null}
+      {onFix && FIXABLE.includes(day.status) ? (
+        <Button
+          title={
+            day.status === 'missed_punch_out'
+              ? 'Fix missed punch-out'
+              : 'Request correction'
+          }
+          variant="secondary"
+          size="sm"
+          onPress={() => onFix(day)}
+          style={styles.fixBtn}
+        />
+      ) : null}
     </Card>
   );
 };
 
+const RequestRow = ({ item }) => (
+  <Card style={styles.dayCard}>
+    <View style={styles.dayTop}>
+      <View style={styles.flex}>
+        <AppText variant="bodyMedium">
+          {item.isDateRange && item.endDate && item.endDate !== item.date
+            ? `${formatDate(item.date, 'DD MMM')} – ${formatDate(item.endDate)}`
+            : formatDate(item.date, 'ddd, DD MMM YYYY')}
+        </AppText>
+        <AppText variant="caption" color="mutedForeground">
+          {item.reason}
+          {item.dayType ? ` · ${item.dayType}` : ''}
+        </AppText>
+      </View>
+      <StatusBadge status={item.status} />
+    </View>
+    <AppText variant="caption" color="textSecondary" style={styles.dayMeta}>
+      Requested {formatTime(item.checkIn)} – {formatTime(item.checkOut)}
+      {item.actualCheckIn || item.actualCheckOut
+        ? ` · punched ${formatTime(item.actualCheckIn)} – ${formatTime(
+            item.actualCheckOut,
+          )}`
+        : ''}
+    </AppText>
+    {item.managerComments || item.hrComments ? (
+      <AppText variant="caption" color="mutedForeground" style={styles.dayMeta}>
+        “{item.hrComments || item.managerComments}”
+      </AppText>
+    ) : null}
+  </Card>
+);
+
 const AttendanceScreen = () => {
+  const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const { colors, radius } = useTheme();
-  const { history } = useAppSelector(selectAttendance);
+  const { history, setup, myRegularizations } =
+    useAppSelector(selectAttendance);
   const [month, setMonth] = useState(dayjs().startOf('month'));
   const [tab, setTab] = useState('overview');
   const [selectedDay, setSelectedDay] = useState(null);
+  const requireCheckout = setup.data.requireCheckout;
+  const joinedOn = useAppSelector(selectProfile).employee.data?.dateOfJoining;
 
   const load = useCallback(() => {
     dispatch(fetchAttendanceStatus());
+    dispatch(fetchAttendanceSetup());
+    dispatch(fetchMyRegularizations());
     dispatch(fetchAttendanceHistory({ month: month.format('YYYY-MM-DD') }));
   }, [dispatch, month]);
 
@@ -120,85 +196,137 @@ const AttendanceScreen = () => {
     load();
   }, [load]);
 
-  const records = useMemo(
-    () =>
-      [...(history.data || [])].sort(
-        (a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf(),
-      ),
-    [history.data],
-  );
-  const summary = useMemo(() => {
-    const present = records.filter(r => r.checkInTime).length;
-    const late = records.filter(r => r.isLate).length;
-    const minutes = records.reduce(
-      (acc, r) => acc + (r.durationMinutes || 0),
-      0,
-    );
-    return { present, late, minutes, avg: present ? minutes / present : 0 };
-  }, [records]);
-
   const isCurrentMonth = month.isSame(dayjs(), 'month');
+  const holidays = useMemo(
+    () => holidayMap(setup.data.holidays),
+    [setup.data.holidays],
+  );
 
   const byDate = useMemo(() => {
     const map = {};
-    records.forEach(r => {
-      if (r.date) map[dayjs(r.date).format('YYYY-MM-DD')] = r;
+    (history.data || []).forEach(r => {
+      if (r.date) map[dateKey(r.date)] = r;
     });
     return map;
-  }, [records]);
+  }, [history.data]);
 
-  // Days of the viewed month that have already happened (up to today)
-  const elapsedDays = useMemo(() => {
-    const last = isCurrentMonth ? dayjs().date() : month.daysInMonth();
-    return Array.from({ length: last }, (_, i) => month.add(i, 'day'));
-  }, [month, isCurrentMonth]);
+  // Every day of the viewed month with its status (portal rules)
+  const days = useMemo(() => {
+    const list = [];
+    for (let i = 0; i < month.daysInMonth(); i += 1) {
+      const d = month.add(i, 'day');
+      const key = dateKey(d);
+      const record = byDate[key] || null;
+      const holiday = holidays[key] || null;
+      list.push({
+        date: key,
+        record,
+        holiday,
+        status: getDayStatus({
+          date: d,
+          record,
+          holiday,
+          requireCheckout,
+          joinedOn,
+        }),
+      });
+    }
+    return list;
+  }, [month, byDate, holidays, requireCheckout, joinedOn]);
+
+  const pastDays = useMemo(
+    () => days.filter(d => !dayjs(d.date).isAfter(dayjs(), 'day')),
+    [days],
+  );
+
+  const summary = useMemo(() => {
+    const count = st => pastDays.filter(d => d.status === st).length;
+    const records = pastDays.map(d => d.record).filter(Boolean);
+    const workMinutes = records.reduce(
+      (n, r) => n + (r.durationMinutes || 0),
+      0,
+    );
+    const breakMinutes = records.reduce((n, r) => n + (r.breakMinutes || 0), 0);
+    const worked = records.filter(r => r.checkInTime).length;
+    return {
+      present: worked,
+      late: count('late'),
+      absent: count('absent'),
+      missed: count('missed_punch_out'),
+      workMinutes,
+      breakMinutes,
+      avg: worked ? workMinutes / worked : 0,
+    };
+  }, [pastDays]);
 
   const composition = useMemo(() => {
-    const counts = { present: 0, late: 0, half_day: 0, other: 0 };
-    records.forEach(r => {
-      const st = dayStatus(r);
-      if (counts[st] !== undefined) counts[st] += 1;
-      else counts.other += 1;
+    const tones = {
+      success: colors.success,
+      warning: colors.warning,
+      info: colors.info,
+      danger: colors.danger,
+      neutral: colors.border,
+    };
+    const counts = {};
+    pastDays.forEach(d => {
+      if (d.status) counts[d.status] = (counts[d.status] || 0) + 1;
     });
-    const noPunch = elapsedDays.filter(
-      d => !byDate[d.format('YYYY-MM-DD')],
-    ).length;
-    return [
-      { label: 'Present', value: counts.present, color: colors.success },
-      { label: 'Late', value: counts.late, color: colors.warning },
-      { label: 'Half day', value: counts.half_day, color: colors.info },
-      { label: 'Other', value: counts.other, color: colors.danger },
-      { label: 'No punch', value: noPunch, color: colors.border },
-    ].filter(x => x.value > 0 || x.label === 'Present');
-  }, [records, elapsedDays, byDate, colors]);
+    return Object.keys(DAY_STATUS)
+      .filter(k => counts[k])
+      .map(k => ({
+        label: DAY_STATUS[k].label,
+        value: counts[k],
+        color: tones[DAY_STATUS[k].tone],
+      }));
+  }, [pastDays, colors]);
 
   const hoursData = useMemo(
     () =>
-      elapsedDays.map(d => {
-        const r = byDate[d.format('YYYY-MM-DD')];
-        const n = d.date();
+      pastDays.map(d => {
+        const n = dayjs(d.date).date();
         return {
           label: n === 1 || n % 5 === 0 ? String(n) : '',
-          value: r ? Math.round(((r.durationMinutes || 0) / 60) * 10) / 10 : 0,
+          value: d.record
+            ? Math.round(((d.record.durationMinutes || 0) / 60) * 10) / 10
+            : 0,
         };
       }),
-    [elapsedDays, byDate],
+    [pastDays],
   );
 
   const calendarDays = useMemo(() => {
     const map = {};
-    Object.entries(byDate).forEach(([k, r]) => {
-      map[k] = STATUS_TONE[dayStatus(r)] || 'neutral';
-    });
-    elapsedDays.forEach(d => {
-      const k = d.format('YYYY-MM-DD');
-      if (!map[k] && !d.isSame(dayjs(), 'day')) map[k] = 'neutral';
+    days.forEach(d => {
+      if (d.status) map[d.date] = DAY_STATUS[d.status].tone;
     });
     return map;
-  }, [byDate, elapsedDays]);
+  }, [days]);
 
-  const selectedRecord = selectedDay ? byDate[selectedDay] : null;
+  const openFix = day =>
+    navigation.navigate('WorkHourRequest', {
+      date: day.date,
+      reason:
+        day.status === 'missed_punch_out' || day.status === 'absent'
+          ? 'Missed Punch'
+          : null,
+    });
+
+  const logDays = useMemo(
+    () =>
+      [...pastDays]
+        .reverse()
+        .filter(
+          d => d.record || d.status === 'absent' || d.status === 'holiday',
+        ),
+    [pastDays],
+  );
+  const selected = selectedDay ? days.find(d => d.date === selectedDay) : null;
   const loadingFirst = history.loading && !history.loaded;
+
+  const changeMonth = delta => {
+    setMonth(m => m.add(delta, 'month'));
+    setSelectedDay(null);
+  };
 
   return (
     <Screen
@@ -208,12 +336,11 @@ const AttendanceScreen = () => {
     >
       <PunchCard />
 
+      <MissedPunchBanner />
+
       <View style={styles.monthRow}>
         <Pressable
-          onPress={() => {
-            setMonth(m => m.subtract(1, 'month'));
-            setSelectedDay(null);
-          }}
+          onPress={() => changeMonth(-1)}
           hitSlop={10}
           style={[
             styles.navBtn,
@@ -229,10 +356,7 @@ const AttendanceScreen = () => {
         <AppText variant="h3">{month.format('MMMM YYYY')}</AppText>
         <Pressable
           disabled={isCurrentMonth}
-          onPress={() => {
-            setMonth(m => m.add(1, 'month'));
-            setSelectedDay(null);
-          }}
+          onPress={() => changeMonth(1)}
           hitSlop={10}
           style={[
             styles.navBtn,
@@ -249,43 +373,68 @@ const AttendanceScreen = () => {
       </View>
 
       <Card style={styles.summary}>
-        <View style={styles.sumItem}>
-          <AppText variant="h2" color="success">
-            {summary.present}
-          </AppText>
-          <AppText variant="caption" color="mutedForeground">
-            Present
-          </AppText>
-        </View>
-        <View style={styles.sumItem}>
-          <AppText variant="h2" color="warning">
-            {summary.late}
-          </AppText>
-          <AppText variant="caption" color="mutedForeground">
-            Late
-          </AppText>
-        </View>
-        <View style={styles.sumItem}>
-          <AppText variant="h2">
-            {formatDuration(summary.minutes).replace(/ \d+m$/, '')}
-          </AppText>
-          <AppText variant="caption" color="mutedForeground">
-            Total hours
-          </AppText>
-        </View>
-        <View style={styles.sumItem}>
-          <AppText variant="h2">{formatDuration(summary.avg)}</AppText>
-          <AppText variant="caption" color="mutedForeground">
-            Avg / day
-          </AppText>
-        </View>
+        {[
+          ['Present', summary.present, 'success'],
+          ['Late', summary.late, 'warning'],
+          ['Absent', summary.absent, 'danger'],
+        ].map(([label, value, color]) => (
+          <View key={label} style={styles.sumItem}>
+            <AppText variant="h2" color={color}>
+              {value}
+            </AppText>
+            <AppText variant="caption" color="mutedForeground">
+              {label}
+            </AppText>
+          </View>
+        ))}
+      </Card>
+      <Card style={[styles.summary, styles.summary2]}>
+        {[
+          ['Net hours', formatDuration(summary.workMinutes)],
+          ['Break', formatDuration(summary.breakMinutes)],
+          ['Avg / day', formatDuration(summary.avg)],
+        ].map(([label, value]) => (
+          <View key={label} style={styles.sumItem}>
+            <AppText variant="h3">{value}</AppText>
+            <AppText variant="caption" color="mutedForeground">
+              {label}
+            </AppText>
+          </View>
+        ))}
       </Card>
 
       <Card style={styles.tabsCard}>
         <SegmentedTabs options={TABS} value={tab} onChange={setTab} />
       </Card>
 
-      {loadingFirst ? (
+      {tab === 'requests' ? (
+        <>
+          <Button
+            title="New work hour request"
+            icon={Plus}
+            variant="secondary"
+            onPress={() => navigation.navigate('WorkHourRequest')}
+            style={styles.firstSection}
+          />
+          <View style={styles.firstSection}>
+            {myRegularizations.loading && !myRegularizations.loaded ? (
+              <ListSkeleton rows={2} />
+            ) : myRegularizations.error ? (
+              <ErrorState message={myRegularizations.error} onRetry={load} />
+            ) : myRegularizations.data.length ? (
+              myRegularizations.data.map(r => (
+                <RequestRow key={r.id} item={r} />
+              ))
+            ) : (
+              <EmptyState
+                icon={ClipboardList}
+                title="No work hour requests"
+                message="Requests to correct your attendance will appear here."
+              />
+            )}
+          </View>
+        </>
+      ) : loadingFirst ? (
         <ListSkeleton rows={3} />
       ) : history.error ? (
         <ErrorState message={history.error} onRetry={load} />
@@ -301,7 +450,7 @@ const AttendanceScreen = () => {
               color="mutedForeground"
               style={styles.hint}
             >
-              How your {elapsedDays.length} days so far break down
+              How your {pastDays.length} days so far break down
             </AppText>
             <StackedBar segments={composition} />
           </Card>
@@ -313,8 +462,8 @@ const AttendanceScreen = () => {
               color="mutedForeground"
               style={styles.hint}
             >
-              {formatDuration(summary.minutes)} across {summary.present} working{' '}
-              {summary.present === 1 ? 'day' : 'days'}
+              {formatDuration(summary.workMinutes)} across {summary.present}{' '}
+              working {summary.present === 1 ? 'day' : 'days'}
             </AppText>
             <BarChart data={hoursData} height={110} barWidth="70%" />
           </Card>
@@ -331,9 +480,10 @@ const AttendanceScreen = () => {
             <View style={styles.calLegend}>
               {[
                 ['Present', colors.success],
-                ['Late', colors.warning],
-                ['Half day', colors.info],
-                ['No punch', colors.mutedForeground],
+                ['Late / early', colors.warning],
+                ['Leave / holiday', colors.info],
+                ['Absent / missed', colors.danger],
+                ['Weekend', colors.mutedForeground],
               ].map(([label, c]) => (
                 <View key={label} style={styles.legendItem}>
                   <View style={[styles.legendDot, { backgroundColor: c }]} />
@@ -344,27 +494,18 @@ const AttendanceScreen = () => {
               ))}
             </View>
           </Card>
-          {selectedDay ? (
-            selectedRecord ? (
-              <DayRow record={selectedRecord} />
-            ) : (
-              <Card>
-                <AppText variant="caption" color="mutedForeground">
-                  No attendance recorded on{' '}
-                  {dayjs(selectedDay).format('ddd, DD MMM')}.
-                </AppText>
-              </Card>
-            )
+          {selected ? (
+            <DayRow day={selected} onFix={openFix} />
           ) : (
             <AppText variant="caption" color="mutedForeground" align="center">
-              Tap a day to see its punches
+              Tap a day to see its punches or request a correction
             </AppText>
           )}
         </>
-      ) : records.length ? (
+      ) : logDays.length ? (
         <View style={styles.firstSection}>
-          {records.map(r => (
-            <DayRow key={r.id || r.date} record={r} />
+          {logDays.map(d => (
+            <DayRow key={d.date} day={d} onFix={openFix} />
           ))}
         </View>
       ) : (
@@ -395,6 +536,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   summary: { flexDirection: 'row', justifyContent: 'space-between' },
+  summary2: { marginTop: 10 },
+  sumItem: { alignItems: 'center', flex: 1 },
   tabsCard: { padding: 8, marginTop: 12 },
   firstSection: { marginTop: 16 },
   hint: { marginBottom: 14 },
@@ -403,19 +546,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 14,
+    gap: 12,
     marginTop: 12,
   },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 3 },
-  sumItem: { alignItems: 'center', flex: 1 },
-  dayCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 10,
-    padding: 12,
-  },
+  dayCard: { marginBottom: 10, padding: 12 },
+  dayTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  dayMeta: { marginTop: 8 },
+  fixBtn: { marginTop: 10 },
   dateBox: {
     width: 50,
     height: 54,
